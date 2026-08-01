@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.oryxos</groupId>
+        <artifactId>oryxos</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>oryxos-tool</artifactId>
+    <name>oryxos-tool</name>
+    <description>能力四：内置 Tool（File/Shell/Http）、MCP Client、ToolRegistry、SandboxChecker（三合一，不拆多模块）</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.oryxos</groupId>
+            <artifactId>oryxos-core</artifactId>
+        </dependency>
+        <!-- MCP Java SDK：OryxOS 作为 MCP Client 连接外部 MCP server（方式一/方式二 Plugin Tool） -->
+        <dependency>
+            <groupId>io.modelcontextprotocol.sdk</groupId>
+            <artifactId>mcp</artifactId>
+        </dependency>
+    </dependencies>
+</project>

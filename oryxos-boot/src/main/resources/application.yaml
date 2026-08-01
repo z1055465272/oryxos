@@ -1,0 +1,13 @@
+# OryxOS 默认配置（核心阶段骨架）
+# 完整配置（Provider/Profile/Skill/MCP 等）在 US-1 对接 LLM、US-5 持久化时补充
+spring:
+  application:
+    name: oryxos
+  datasource:
+    url: jdbc:sqlite:.oryxos/oryxos.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      # 骨架阶段无 @Entity，先 none；US-5 建 sessions/tool_invocations/llm_calls 时按需 update
+      ddl-auto: none

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.oryxos</groupId>
+        <artifactId>oryxos</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>oryxos-provider</artifactId>
+    <name>oryxos-provider</name>
+    <description>能力一：ProviderService、Function Calling 适配、provider name 显式映射</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.oryxos</groupId>
+            <artifactId>oryxos-core</artifactId>
+        </dependency>
+        <!-- Spring AI 只用一半：Provider 抽象（ChatModel）+ 协议转换 + @Tool schema 生成（禁用自动 tool 执行） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-model</artifactId>
+        </dependency>
+        <!-- OpenAI 协议 connector，覆盖 DeepSeek / Kimi 等（核心阶段先跑稳 OpenAI 协议） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-openai</artifactId>
+        </dependency>
+    </dependencies>
+</project>

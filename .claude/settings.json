@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ' *)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --dump-dom http://localhost:4391/ 2>/dev/null > /c/tmp/oryx_dom.html; wc -c /c/tmp/oryx_dom.html)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --force-prefers-color-scheme=dark --window-size=1440,900 --screenshot=\"C:\\\\\\\\tmp\\\\\\\\oryx_dark.png\" http://localhost:4391/)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --force-prefers-color-scheme=dark --dump-dom http://localhost:4391/)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --user-data-dir=\"C:\\\\\\\\tmp\\\\\\\\edge_fresh\" --force-prefers-color-scheme=dark --dump-dom http://localhost:4391/)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --version)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --user-data-dir=\"C:\\\\\\\\tmp\\\\\\\\edge_fresh2\" --blink-settings=preferredColorScheme=dark --dump-dom http://localhost:4391/)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --user-data-dir=\"C:\\\\\\\\tmp\\\\\\\\edge_fresh3\" --blink-settings=preferredColorScheme=dark --window-size=1440,900 --screenshot=\"C:\\\\\\\\tmp\\\\\\\\oryx_dark2.png\" http://localhost:4391/)",
+      "Bash(node -e \"console.log\\(typeof WebSocket\\)\")",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --user-data-dir=\"C:\\\\\\\\tmp\\\\\\\\edge_cdp\" --remote-debugging-port=9222 http://localhost:4391/)",
+      "Bash(node measure.js)",
+      "Bash(npx vitepress *)",
+      "Bash(curl -s -o /dev/null http://localhost:4391/)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //PID 13524 //F)",
+      "Bash(curl -s -o /dev/null -w \"server: %{http_code}\\\\n\" http://localhost:4391/)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --user-data-dir=\"C:\\\\\\\\tmp\\\\\\\\edge_cdp3\" --remote-debugging-port=9224 http://localhost:4391/)",
+      "Bash(sed -i 's/9223/9224/' /c/tmp/measure3.js)",
+      "Bash(node measure3.js)",
+      "Bash(taskkill //F //IM msedge.exe)",
+      "Bash(taskkill //PID 21988 //F)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --user-data-dir=\"C:\\\\\\\\tmp\\\\\\\\edge_cdp4\" --remote-debugging-port=9225 http://localhost:4391/)",
+      "Bash(sed -i 's/9224/9225/' /c/tmp/widthcheck.js)",
+      "Bash(sed -i 's/9224/9225/' /c/tmp/measure3.js)",
+      "Bash(sed -i 's/9224/9225/' /c/tmp/domcheck.js)",
+      "Bash(node widthcheck.js)",
+      "Bash(grep -o '[^,}{]*content-container[^}]*}' d:/sortware/programSourceCode/ai_projects/oryxOS/website/docs/.vitepress/dist/assets/style.DDIlFgOa.css)",
+      "Bash(sed -i 's/9228/9228/' /c/tmp/chain.js)",
+      "Bash(node chain.js)",
+      "Bash(sed -i 's/9227/9228/g' /c/tmp/chain.js)",
+      "Bash(node verify.js)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --user-data-dir=\"C:\\\\\\\\tmp\\\\\\\\edge_shot1\" --window-size=1440,900 --screenshot=\"C:\\\\\\\\tmp\\\\\\\\final_light.png\" http://localhost:4391/)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --user-data-dir=\"C:\\\\\\\\tmp\\\\\\\\edge_shot2\" --blink-settings=preferredColorScheme=dark --window-size=1440,900 --screenshot=\"C:\\\\\\\\tmp\\\\\\\\final_dark.png\" http://localhost:4391/)",
+      "Bash(\"/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe\" --headless=new --disable-gpu --no-sandbox --user-data-dir=\"C:\\\\\\\\tmp\\\\\\\\edge_shot3\" --window-size=1440,7000 --screenshot=\"C:\\\\\\\\tmp\\\\\\\\final_full.png\" http://localhost:4391/)"
+    ],
+    "additionalDirectories": [
+      "C:\\tmp"
+    ]
+  }
+}

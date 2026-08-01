@@ -1,0 +1,26 @@
+# Maven
+target/
+*.class
+
+# VitePress 构建缓存
+website/docs/.vitepress/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# OryxOS 运行时数据（Session / SQLite / 日志不提交，Profile/Bootstrap/Memory/Skill/MCP 配置需提交）
+.oryxos/sessions/
+.oryxos/logs/
+.oryxos/oryxos.db
