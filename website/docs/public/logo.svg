@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="OryxOS logo">
+  <rect width="120" height="120" rx="26" fill="#000000"/>
+  <g fill="#ffffff">
+    <!-- 两枚长直羚羊角 (oryx horns) -->
+    <path d="M50 62 L34 16 L30 17 L45 62 Z"/>
+    <path d="M70 62 L86 16 L90 17 L75 62 Z"/>
+    <!-- 头部轮廓 -->
+    <ellipse cx="60" cy="74" rx="16" ry="15"/>
+    <!-- 双耳 -->
+    <path d="M44 62 L34 52 L38 66 Z"/>
+    <path d="M76 62 L86 52 L82 66 Z"/>
+  </g>
+</svg>

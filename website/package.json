@@ -1,0 +1,15 @@
+{
+  "name": "oryxos-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OryxOS official website — VitePress site replicating the mq9 homepage design",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev docs",
+    "build": "vitepress build docs",
+    "preview": "vitepress preview docs"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}
