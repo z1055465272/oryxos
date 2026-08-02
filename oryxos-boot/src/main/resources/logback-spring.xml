@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OryxOS 结构化日志：
+  - 默认 / dev：彩色 console，易读
+  - prod：LogstashEncoder JSON 输出，带 traceId（MDC），供日志采集（ELK / Loki）直接消费
+  业务代码统一经 SLF4J 打日志，禁止 System.out。
+-->
+<configuration>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="oryxos"/>
+
+    <!-- traceId 由 MdcFilter（oryxos-web）在请求入口写入 MDC；无请求的线程兜底生成 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%thread] %magenta(%logger{36}) - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdc>true</includeMdc>
+            <customFields>{"app":"${appName}"}</customFields>
+        </encoder>
+    </appender>
+
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="JSON"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="!prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>

@@ -1,0 +1,24 @@
+# OryxOS 本地提交前检查（pre-commit）
+# 安装：pip install pre-commit && pre-commit install
+# 作用：提交前快速跑格式校验与 SpotBugs，机器把关，不靠人自觉。
+# 完整门禁（checkstyle / pmd / dependency-check）在 GitHub Actions CI 里强制。
+repos:
+  - repo: local
+    hooks:
+      - id: spotless-check
+        name: Spotless (google-java-format) check
+        entry: mvn -q spotless:check
+        language: system
+        pass_filenames: false
+        types: [java]
+      - id: spotbugs-check
+        name: SpotBugs (Find Security Bugs) check
+        entry: mvn -q -DskipTests spotbugs:check
+        language: system
+        pass_filenames: false
+        types: [java]
+      - id: dependency-check-quick
+        name: OWASP Dependency-Check
+        entry: mvn -q -DskipTests dependency-check:check
+        language: system
+        pass_filenames: false

@@ -44,6 +44,22 @@
         <sqlite-jdbc.version>3.53.2.1</sqlite-jdbc.version>
         <picocli.version>4.7.7</picocli.version>
         <mcp-sdk.version>2.0.0</mcp-sdk.version>
+
+        <!-- 工程地基：日志 / 监控 / API 规范 -->
+        <springdoc.version>2.8.17</springdoc.version>
+        <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
+
+        <!-- 工程地基：开发规范与代码安全检查（版本相互锁定，勿随意升级）
+             p3c-pmd 编译依赖 PMD 6（2.x 用 6.15.0），因此必须固定 maven-pmd-plugin 3.21.0（PMD 6.55）。
+             maven-pmd-plugin ≥3.22 已切 PMD 7，P3C 规则集在 PMD 7 下无法加载。 -->
+        <spotless.version>3.9.0</spotless.version>
+        <google-java-format.version>1.36.1</google-java-format.version>
+        <checkstyle.version>3.6.0</checkstyle.version>
+        <p3c-pmd.version>2.1.1</p3c-pmd.version>
+        <pmd-plugin.version>3.21.0</pmd-plugin.version>
+        <spotbugs.version>4.10.3.0</spotbugs.version>
+        <findsecbugs.version>1.14.0</findsecbugs.version>
+        <dependency-check.version>12.2.2</dependency-check.version>
     </properties>
 
     <dependencyManagement>
@@ -132,6 +148,18 @@
                 <artifactId>mcp</artifactId>
                 <version>${mcp-sdk.version}</version>
             </dependency>
+
+            <!-- 工程地基：OpenAPI / 结构化日志 / 监控 -->
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -142,7 +170,136 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                 </plugin>
+
+                <!-- 格式层：Spotless + google-java-format（管缩进/import/换行，apply 一键自动修） -->
+                <plugin>
+                    <groupId>com.diffplug.spotless</groupId>
+                    <artifactId>spotless-maven-plugin</artifactId>
+                    <version>${spotless.version}</version>
+                    <configuration>
+                        <java>
+                            <googleJavaFormat>
+                                <version>${google-java-format.version}</version>
+                                <style>GOOGLE</style>
+                            </googleJavaFormat>
+                            <removeUnusedImports/>
+                            <importOrder/>
+                        </java>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- 兜底：Checkstyle（google_checks.xml） -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${checkstyle.version}</version>
+                    <configuration>
+                        <configLocation>google_checks.xml</configLocation>
+                        <consoleOutput>true</consoleOutput>
+                        <failOnViolation>true</failOnViolation>
+                        <failsOnError>true</failsOnError>
+                        <violationSeverity>warning</violationSeverity>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- 编码规约层：阿里 P3C（挂在 PMD 6 上）。
+                     必须用 maven-pmd-plugin 3.21.0（PMD 6.55）：p3c-pmd 2.1.1 编译依赖 PMD 6.15，
+                     PMD 7 无法加载 P3C 规则集。 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>${pmd-plugin.version}</version>
+                    <configuration>
+                        <rulesets>
+                            <ruleset>rulesets/java/ali-pmd.xml</ruleset>
+                            <ruleset>rulesets/java/ali-concurrent.xml</ruleset>
+                            <ruleset>rulesets/java/ali-exception.xml</ruleset>
+                            <ruleset>rulesets/java/ali-oop.xml</ruleset>
+                            <ruleset>rulesets/java/ali-naming.xml</ruleset>
+                        </rulesets>
+                        <failOnViolation>true</failOnViolation>
+                        <printFailingErrors>true</printFailingErrors>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.alibaba.p3c</groupId>
+                            <artifactId>p3c-pmd</artifactId>
+                            <version>${p3c-pmd.version}</version>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- 安全扫描：SpotBugs + Find Security Bugs（OWASP Top 10） -->
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${spotbugs.version}</version>
+                    <configuration>
+                        <effort>Max</effort>
+                        <threshold>Low</threshold>
+                        <failOnError>true</failOnError>
+                        <plugins>
+                            <plugin>
+                                <groupId>com.h3xstream.findsecbugs</groupId>
+                                <artifactId>findsecbugs-plugin</artifactId>
+                                <version>${findsecbugs.version}</version>
+                            </plugin>
+                        </plugins>
+                    </configuration>
+                </plugin>
+
+                <!-- 第三方依赖 CVE 扫描：OWASP Dependency-Check（CI 阶段执行，指定 failBuildOnCVSS） -->
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${dependency-check.version}</version>
+                    <configuration>
+                        <failBuildOnCVSS>7</failBuildOnCVSS>
+                        <formats>
+                            <format>HTML</format>
+                            <format>JSON</format>
+                        </formats>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
+
+        <!-- 激活格式/规约检查随 mvn verify 执行（配置继承自 pluginManagement）。
+             SpotBugs 与 Dependency-Check 不在生命周期里绑定（慢且需联网），由 CI 显式跑。 -->
+        <plugins>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 </project>

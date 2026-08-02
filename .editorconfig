@@ -1,0 +1,20 @@
+# 统一编辑器行为：与 Spotless(google-java-format) 保持一致
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{java}]
+indent_style = space
+indent_size = 2
+tab_width = 2
+
+[*.{xml,yaml,yml,json,properties}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
