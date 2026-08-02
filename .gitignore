@@ -2,8 +2,9 @@
 target/
 *.class
 
-# VitePress 构建缓存
-website/docs/.vitepress/
+# VitePress 构建缓存（config/theme 等源码需提交）
+website/docs/.vitepress/dist/
+website/docs/.vitepress/cache/
 
 # IDE
 .idea/

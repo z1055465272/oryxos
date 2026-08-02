@@ -1,0 +1,86 @@
+/* ============================================================
+ * OryxOS 官网 —— 全局主题覆盖
+ * 目标：浅色/暗色双主题 + 黑白灰极简，让首页完全由 OryxHome 组件控制，
+ * 视觉对齐 mq9.robustmq.com（mq9-* 类 → ory-* 类）。
+ * ============================================================ */
+
+/* 浅色主题（默认） */
+:root {
+  --vp-c-bg: #ffffff;
+  --vp-c-bg-soft: #f5f5f5;
+  --vp-c-bg-alt: #fafafa;
+  --vp-c-brand-1: #000000;
+  --vp-c-brand-2: #333333;
+  --vp-c-brand-3: #000000;
+  --vp-c-text-1: #000000;
+  --vp-c-text-2: #666666;
+  --vp-c-text-3: #999999;
+  --vp-c-border: #e5e5e5;
+  --vp-c-border-soft: #e5e5e5;
+  --vp-c-divider: #e5e5e5;
+}
+
+/* 暗色主题 */
+html.dark {
+  --vp-c-bg: #0a0a0a;
+  --vp-c-bg-soft: #141414;
+  --vp-c-bg-alt: #1a1a1a;
+  --vp-c-brand-1: #ffffff;
+  --vp-c-brand-2: #cccccc;
+  --vp-c-brand-3: #ffffff;
+  --vp-c-text-1: #e5e5e5;
+  --vp-c-text-2: #999999;
+  --vp-c-text-3: #666666;
+  --vp-c-border: #333333;
+  --vp-c-border-soft: #2a2a2a;
+  --vp-c-divider: #2a2a2a;
+}
+
+html,
+body {
+  background: #ffffff;
+  color: #000000;
+}
+
+html.dark,
+html.dark body {
+  background: #0a0a0a;
+  color: #e5e5e5;
+}
+
+/* 首页容器：去掉 VitePress 默认的 max-width/padding，让组件全宽控制布局。
+   首页用的是默认 VPDoc 布局（非 VPHome），需用 :has() 定位含 OryxHome 的内容链。
+   特异性必须 ≥ VitePress 的 `.VPDoc:not(.has-sidebar) .content[data-v-*]`（(0,4,0)）。 */
+.VPDoc:not(.has-sidebar) .content-container:has(.ory-page) {
+  max-width: none;
+  margin: 0;
+}
+.vp-doc:has(.ory-page) {
+  max-width: none;
+}
+main:has(.ory-page) {
+  max-width: none;
+}
+.VPDoc:not(.has-sidebar) .container:has(.ory-page) {
+  max-width: none;
+  margin: 0;
+}
+.VPDoc:not(.has-sidebar) .content:has(.ory-page) {
+  max-width: none;
+  padding: 0;
+}
+.VPDoc:has(.ory-page) {
+  padding: 0;
+}
+
+/* 首页组件内链接 hover 保持组件自己的样式，不套用主题色 */
+.VPHome .vp-doc a {
+  text-decoration: none;
+}
+
+/* 首页用 Space Grotesk 做大标题 */
+.ory-title-name,
+.ory-section-title,
+.ory-cta-title {
+  font-family: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
