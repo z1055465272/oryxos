@@ -169,7 +169,7 @@
 import { computed } from 'vue'
 import { withBase } from 'vitepress'
 
-const github = 'https://github.com/oryxos/oryxos'
+const github = 'https://github.com/z1055465272/oryxos'
 
 const props = defineProps({
   lang: { type: String, default: 'en' },
@@ -299,7 +299,7 @@ $ curl -X POST http://localhost:8080/api/v1/sessions \\
         icon: '🔌',
         title: 'CLI Channel',
         desc: 'The fastest way to start. One jar, interactive multi-turn chat, and the full 12-command toolbox.',
-        cmds: ['curl -LO https://github.com/oryxos/oryxos/releases/download/latest/oryxos.jar', 'java -jar oryxos.jar init', 'java -jar oryxos.jar chat'],
+        cmds: ['curl -LO https://github.com/z1055465272/oryxos/releases/download/latest/oryxos.jar', 'java -jar oryxos.jar init', 'java -jar oryxos.jar chat'],
       },
       {
         icon: '📦',
@@ -497,7 +497,7 @@ $ curl -X POST http://localhost:8080/api/v1/sessions \\
         icon: '🔌',
         title: 'CLI 命令行',
         desc: '最快捷的起步方式。一个 JAR，交互式多轮对话，完整的 12 个命令工具箱。',
-        cmds: ['curl -LO https://github.com/oryxos/oryxos/releases/download/latest/oryxos.jar', 'java -jar oryxos.jar init', 'java -jar oryxos.jar chat'],
+        cmds: ['curl -LO https://github.com/z1055465272/oryxos/releases/download/latest/oryxos.jar', 'java -jar oryxos.jar init', 'java -jar oryxos.jar chat'],
       },
       {
         icon: '📦',

@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress'
 
-const github = 'https://github.com/oryxos/oryxos'
+const github = 'https://github.com/z1055465272/oryxos'
 const base = process.env.GITHUB_ACTIONS ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/` : '/'
 
 export default defineConfig({

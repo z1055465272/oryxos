@@ -43,7 +43,7 @@ One line: *frameworks give you code and you build your own runtime; orchestratio
 
 ## Design documents
 
-- [Industry research](https://github.com/oryxos/oryxos/tree/main/docs/IndustryResearch.md) — what an Agent OS is, what the industry has done, where Java is missing
-- [Requirements](https://github.com/oryxos/oryxos/tree/main/docs/RequirementDoc.md) — five core capabilities and support modules
-- [Technical solution](https://github.com/oryxos/oryxos/tree/main/docs/TechnicalSolution.md) — key decisions, module architecture, persistence
-- [Implementation guide](https://github.com/oryxos/oryxos/tree/main/docs/AiProgrammingGuilde.md) — Spec-Kit workflow and the five user stories
+- [Industry research](https://github.com/z1055465272/oryxos/blob/main/docs/IndustryResearch.md) — what an Agent OS is, what the industry has done, where Java is missing
+- [Requirements](https://github.com/z1055465272/oryxos/blob/main/docs/RequirementDoc.md) — five core capabilities and support modules
+- [Technical solution](https://github.com/z1055465272/oryxos/blob/main/docs/TechnicalSolution.md) — key decisions, module architecture, persistence
+- [Implementation guide](https://github.com/z1055465272/oryxos/blob/main/docs/AiProgrammingGuilde.md) — Spec-Kit workflow and the five user stories

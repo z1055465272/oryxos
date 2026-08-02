@@ -43,7 +43,7 @@ OryxOS 是基于 Java 实现的、面向企业的 **Agent OS**——运行和管
 
 ## 设计文档
 
-- [业界调研](https://github.com/oryxos/oryxos/tree/main/docs/IndustryResearch.md) — 什么是 Agent OS、业界做到哪、Java 生态缺在哪
-- [需求文档](https://github.com/oryxos/oryxos/tree/main/docs/RequirementDoc.md) — 五大核心能力 + 支撑模块
-- [技术方案](https://github.com/oryxos/oryxos/tree/main/docs/TechnicalSolution.md) — 关键技术决策、模块架构、持久化
-- [实施指引](https://github.com/oryxos/oryxos/tree/main/docs/AiProgrammingGuilde.md) — Spec-Kit 流程与五个 user story
+- [业界调研](https://github.com/z1055465272/oryxos/blob/main/docs/IndustryResearch.md) — 什么是 Agent OS、业界做到哪、Java 生态缺在哪
+- [需求文档](https://github.com/z1055465272/oryxos/blob/main/docs/RequirementDoc.md) — 五大核心能力 + 支撑模块
+- [技术方案](https://github.com/z1055465272/oryxos/blob/main/docs/TechnicalSolution.md) — 关键技术决策、模块架构、持久化
+- [实施指引](https://github.com/z1055465272/oryxos/blob/main/docs/AiProgrammingGuilde.md) — Spec-Kit 流程与五个 user story
