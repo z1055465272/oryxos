@@ -8,8 +8,8 @@
         <p class="ory-title-sub">{{ t.hero.sub }}</p>
         <p class="ory-hero-desc">{{ t.hero.desc }}</p>
         <div class="ory-hero-actions">
-          <a class="ory-btn-primary" href="/docs/what">{{ t.hero.btnPrimary }}</a>
-          <a class="ory-btn-ghost" href="/docs/architecture">{{ t.hero.btnGhost1 }}</a>
+          <a class="ory-btn-primary" :href="withBase('/docs/what')">{{ t.hero.btnPrimary }}</a>
+          <a class="ory-btn-ghost" :href="withBase('/docs/architecture')">{{ t.hero.btnGhost1 }}</a>
           <a class="ory-btn-ghost" :href="github">{{ t.hero.btnGhost2 }}</a>
         </div>
         <div class="ory-hero-note">{{ t.hero.note }}</div>
@@ -52,7 +52,7 @@
     <!-- ============ 3. Architecture Flow ============ -->
     <section class="ory-section ory-flow-section">
       <div class="ory-section-inner">
-        <img src="/flow.svg" alt="OryxOS architecture flow" class="ory-flow-img" />
+        <img :src="withBase('/flow.svg')" alt="OryxOS architecture flow" class="ory-flow-img" />
       </div>
     </section>
 
@@ -156,7 +156,7 @@
           <p class="ory-cta-desc">{{ t.cta.desc }}</p>
           <pre class="ory-code ory-cta-code"><code>{{ t.cta.code }}</code></pre>
           <div class="ory-cta-links">
-            <a class="ory-btn-primary" href="/docs/quick-start">{{ t.cta.btn1 }}</a>
+            <a class="ory-btn-primary" :href="withBase('/docs/quick-start')">{{ t.cta.btn1 }}</a>
             <a class="ory-btn-ghost" :href="github">{{ t.cta.btn2 }}</a>
           </div>
         </div>
@@ -167,6 +167,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { withBase } from 'vitepress'
 
 const github = 'https://github.com/oryxos/oryxos'
 

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 const github = 'https://github.com/oryxos/oryxos'
+const base = process.env.GITHUB_ACTIONS ? `/${process.env.GITHUB_REPOSITORY.split('/')[1]}/` : '/'
 
 export default defineConfig({
   lang: 'en-US',
@@ -8,7 +9,7 @@ export default defineConfig({
   titleTemplate: ':title — OryxOS',
   description:
     'A private, auditable Agent OS for the enterprise — Java-native, self-hosted, built to run business agents you can fully govern.',
-  base: '/',
+  base,
   cleanUrls: true,
   appearance: true,
 
@@ -22,7 +23,7 @@ export default defineConfig({
         href: 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700;900&display=swap',
       },
     ],
-    ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
+    ['link', { rel: 'icon', type: 'image/svg+xml', href: `${base}favicon.svg` }],
     ['meta', { name: 'author', content: 'OryxOS' }],
     ['meta', { name: 'keywords', content: 'OryxOS, agent OS, enterprise agent, ReAct, MCP, Spring AI, LLM, auditable, self-hosted' }],
     ['meta', { name: 'robots', content: 'index, follow' }],
