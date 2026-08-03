@@ -18,7 +18,18 @@ import picocli.CommandLine.IVersionProvider;
     name = "oryxos",
     description = "OryxOS —— 企业私有可审计的 Agent OS 统一底座",
     mixinStandardHelpOptions = true,
-    versionProvider = OryxOscCli.VersionProvider.class)
+    versionProvider = OryxOscCli.VersionProvider.class,
+    subcommands = {
+      InitCommand.class,
+      StatusCommand.class,
+      ChatCommand.class,
+      ServeCommand.class,
+      GatewayCommand.class,
+      ProfileCommand.class,
+      ProviderListCommand.class,
+      ToolListCommand.class,
+      SessionListCommand.class,
+    })
 public class OryxOscCli implements Runnable {
 
   @Override

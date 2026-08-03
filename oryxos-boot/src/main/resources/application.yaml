@@ -9,12 +9,26 @@ spring:
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
     hibernate:
-      # 骨架阶段无 @Entity，先 none；US-5 建 sessions/tool_invocations/llm_calls 时按需 update
+      # 骨架阶段无 @Entity，先 none；表结构演进依赖手工建表脚本（V1/V2），不依赖 ddl-auto 迁移
       ddl-auto: none
+  # 重命令（chat/serve）启动时执行幂等建表脚本（CREATE TABLE IF NOT EXISTS）：
+  # SQLite 上 hibernate.ddl-auto=update 对 ALTER TABLE 支持弱，表结构以 db/migration 脚本为唯一真相源
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/migration/V1__init_audit_tables.sql,classpath:db/migration/V2__create_sessions_table.sql
   threads:
     # Java 21 虚拟线程：单机扛高并发，ReAct Loop 全程同步阻塞也够
     virtual:
       enabled: true
+
+# Provider 显式映射（宪法 III）：provider name → ChatModel 由 CliSpringBootstrap 按此列表装配。
+# api-key 从环境变量读取，不落明文（缺 DEEPSEEK_API_KEY 时启动会清晰报错）
+oryxos:
+  providers:
+    - name: deepseek
+      base-url: https://api.deepseek.com/v1
+      api-key: ${DEEPSEEK_API_KEY}
 
 server:
   port: 8080

@@ -49,6 +49,25 @@ public final class Session {
     this.userId = userId;
   }
 
+  /**
+   * 从持久化数据重建会话（第 18 节 SessionManager 回读用）：还原 status 与 messages。 仅供存储层把 sessions 表记录还原为引擎值对象；
+   * 字段与既有构造器不变，属向后兼容的静态工厂.
+   */
+  public static Session restore(
+      String sessionId,
+      String profileName,
+      String channel,
+      String userId,
+      Status status,
+      List<Message> messages) {
+    Session session = new Session(sessionId, profileName, channel, userId);
+    session.status = status != null ? status : Status.ACTIVE;
+    if (messages != null) {
+      session.messages.addAll(messages);
+    }
+    return session;
+  }
+
   public String id() {
     return sessionId;
   }

@@ -33,6 +33,12 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-community-dialects</artifactId>
         </dependency>
+        <!-- Jackson：messages_json 编解码。版本由 spring-boot-dependencies BOM 管理（jackson-bom），
+             不随 spring-boot-starter-data-jpa 传递（Boot starter 排除 json），必须显式声明 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
 
         <!-- 测试 -->
         <dependency>
