@@ -4,7 +4,90 @@
 
 ## 公共接口契约
 
-### 1. ReActLoop
+### 1. ProviderService（自 oryxos-provider 迁入 oryxos-core）
+
+```java
+package com.oryxos.core;
+
+/**
+ * LLM Provider 统一抽象，对 ReAct 循环屏蔽不同 LLM 厂商差异。
+ * 契约放 core（依赖倒置），实现由 oryxos-provider 的 DefaultProviderService 提供。
+ */
+public interface ProviderService {
+
+  /**
+   * 发起一次 LLM 调用，按 Profile 的 provider name 路由到正确的 ChatModel，
+   * 调用成功/失败都写 llm_calls 审计表。
+   *
+   * @param sessionId 会话标识，用于审计记录关联
+   * @param profile   Agent 配置（provider 选择、model、temperature 等）
+   * @param prompt    本轮完整上下文（system prompt + 多轮消息 + 可用工具）
+   * @return OryxOS 自有响应（text + toolCalls），不暴露 Spring AI 类型
+   */
+  Response chat(String sessionId, Profile profile, Prompt prompt);
+}
+```
+
+### 2. Response / ToolCall（oryxos-core 值对象）
+
+```java
+package com.oryxos.core;
+
+import java.util.List;
+
+/** LLM 响应：文本 + 请求的功能调用列表. */
+public record Response(String text, List<ToolCall> toolCalls) {
+  public boolean hasToolCalls() {
+    return toolCalls != null && !toolCalls.isEmpty();
+  }
+}
+
+/** 工具调用请求值对象（Session 与 Response 共用）. */
+public record ToolCall(String id, String name, String arguments) {}
+```
+
+### 3. Session（oryxos-core 内存版，第 18 节持久化）
+
+```java
+package com.oryxos.core;
+
+import java.util.List;
+
+public final class Session {
+  public enum Status { ACTIVE, ARCHIVED }
+
+  /** 会话消息 sealed 层次. */
+  public sealed interface Message permits UserMessage, AssistantMessage, ToolResultMessage {}
+
+  /** 用户输入. */
+  public record UserMessage(String content) implements Message {}
+
+  /** LLM 响应（含功能调用请求）. */
+  public record AssistantMessage(String content, List<ToolCall> toolCalls) implements Message {}
+
+  /** 工具执行结果（引用 tool_call_id 供协议层配对）. */
+  public record ToolResultMessage(String toolCallId, String toolName, String content)
+      implements Message {}
+
+  public Session(String sessionId, String profileName, String channel, String userId);
+
+  public String id();
+  public String profileName();
+  public String channel();
+  public String userId();
+  public Status status();
+
+  /** 对话历史的只读视图. */
+  public List<Message> messages();
+
+  public void appendUserMessage(String content);
+  public void appendAssistant(String content, List<ToolCall> toolCalls);
+  public void appendToolResult(ToolCall call, ToolResult result);
+  public void markArchived();
+}
+```
+
+### 4. ReActLoop（oryxos-core）
 
 ```java
 package com.oryxos.core;
@@ -12,89 +95,66 @@ package com.oryxos.core;
 /**
  * Agent 的核心循环引擎。
  * 输入 Session + 用户消息 + Profile，驱动 ReAct 循环，返回最终响应。
+ * 主循环手写数十行，不使用 Spring AI Agent 抽象。
  */
 public class ReActLoop {
 
-    /**
-     * @param providerService LLM Provider（第 16 节交付）
-     * @param promptBuilder Prompt 组装器
-     * @param toolExecutor 工具执行器
-     */
-    public ReActLoop(ProviderService providerService,
-                     PromptBuilder promptBuilder,
-                     ToolExecutor toolExecutor);
+  public ReActLoop(ProviderService providerService,
+                   PromptBuilder promptBuilder,
+                   ToolExecutor toolExecutor);
 
-    /**
-     * 运行 ReAct 循环。
-     *
-     * @param session 当前会话（含对话历史）
-     * @param userMessage 用户新消息
-     * @param profile Agent 配置（含 maxIterations、maxHistoryTurns 等）
-     * @return 最终响应文本
-     */
-    public String run(Session session, String userMessage, Profile profile);
+  /**
+   * @param session      当前会话（含对话历史）
+   * @param userMessage  用户新消息
+   * @param profile      Agent 配置（含 maxIterations、maxHistoryTurns）
+   * @return 最终响应文本；达到最大轮数时返回含"达到最大轮数"的停止提示
+   */
+  public String run(Session session, String userMessage, Profile profile);
 }
 ```
 
-### 2. PromptBuilder
+### 5. PromptBuilder（oryxos-core）
 
 ```java
 package com.oryxos.core;
 
 /**
  * 每轮 LLM 调用的 Prompt 组装器。
- * 按四部分顺序拼接：system prompt → 长期记忆 → 会话历史 → 工具列表。
+ * 四部分：①system prompt（角色设定 + ContextLoader 的 Bootstrap + Skill 正文 + 当前日期时间）
+ * ②长期记忆（第 22 节接入，未就位留空）③会话历史（最近 maxHistoryTurns 条截断，默认 20）
+ * ④当前可用工具列表（经 ToolRegistry 从 Profile.tools 名称解析）。
  */
 public class PromptBuilder {
 
-    /**
-     * @param contextLoader 上下文加载器（Bootstrap + AGENT.md + Skill）
-     * @param memoryService 长期记忆服务（第 22 节就位前可为 null）
-     */
-    public PromptBuilder(ContextLoader contextLoader, MemoryService memoryService);
+  public PromptBuilder(ContextLoader contextLoader, ToolRegistry toolRegistry);
 
-    /**
-     * 组装本轮 Prompt。
-     *
-     * @param session 当前会话（取对话历史）
-     * @param profile Agent 配置（取 tools 子集、maxHistoryTurns）
-     * @return 组装好的 Prompt（含 system prompt + 历史 + 工具）
-     */
-    public Prompt build(Session session, Profile profile);
+  public Prompt build(Session session, Profile profile);
 }
 ```
 
-### 3. ToolExecutor
+### 6. ToolExecutor（oryxos-core）
 
 ```java
 package com.oryxos.core;
 
 /**
- * 工具集中执行器。从 ToolRegistry 查找工具 → Sandbox 检查 → 执行 → 写审计。
+ * 工具集中执行器。从 ToolRegistry 查找工具 → 执行 → 写 tool_invocations 审计（成功/失败都写）。
+ * 执行权只此一处，不得有第二条工具执行路径。
  */
 public class ToolExecutor {
 
-    /**
-     * @param toolRegistry 工具注册表
-     * @param toolInvocationRepository 审计 Repository
-     * @param sandbox Sandbox 检查器（第 24 节就位前可为 null，检查跳过）
-     */
-    public ToolExecutor(ToolRegistry toolRegistry,
-                        ToolInvocationRepository toolInvocationRepository,
-                        Sandbox sandbox);
+  public ToolExecutor(ToolRegistry toolRegistry, ToolInvocationStore toolInvocationStore);
 
-    /**
-     * 执行一次工具调用。
-     *
-     * @param sessionId 会话标识（用于审计关联）
-     * @param toolCall LLM 返回的工具调用请求
-     * @return 工具执行结果
-     */
-    public ToolResult execute(String sessionId, ToolCallRequest toolCall);
+  /**
+   * @param sessionId 会话标识（用于审计关联）
+   * @param toolCall  LLM 返回的工具调用请求
+   * @return 工具执行结果；未知工具/业务失败返回失败结果，工具抛异常则审计后上抛
+   */
+  public ToolResult execute(String sessionId, ToolCall toolCall);
 }
 ```
 
-### 4. AgentService
+### 7. AgentService（oryxos-core）
 
 ```java
 package com.oryxos.core;
@@ -105,28 +165,21 @@ package com.oryxos.core;
  */
 public class AgentService {
 
-    /**
-     * @param profileRegistry Profile 注册表
-     * @param reActLoop ReAct 循环
-     * @param sessionManager Session 管理器
-     */
-    public AgentService(ProfileRegistry profileRegistry,
-                        ReActLoop reActLoop,
-                        SessionManager sessionManager);
+  public AgentService(ProfileRegistry profileRegistry,
+                      ReActLoop reActLoop,
+                      SessionManager sessionManager);
 
-    /**
-     * 处理一次用户消息。三种触发源最终都走此入口。
-     *
-     * @param session 当前会话
-     * @param userMessage 用户消息
-     * @return Agent 最终响应
-     * @throws RuntimeException ReActLoop 异常时原样上抛（ProfileContext 在 finally 中保证清理）
-     */
-    public String process(Session session, String userMessage);
+  /**
+   * @param session      当前会话
+   * @param userMessage  用户消息
+   * @return Agent 最终响应
+   * @throws RuntimeException ReActLoop 异常时原样上抛（ProfileContext 在 finally 中保证清理）
+   */
+  public String process(Session session, String userMessage);
 }
 ```
 
-### 5. ProfileContext
+### 8. ProfileContext（oryxos-core）
 
 ```java
 package com.oryxos.core;
@@ -136,20 +189,15 @@ package com.oryxos.core;
  * AgentService 入口 set、出口 clear（finally 保证）。
  */
 public final class ProfileContext {
-    private static final ThreadLocal<Profile> CURRENT = new ThreadLocal<>();
+  private static final ThreadLocal<Profile> CURRENT = new ThreadLocal<>();
 
-    /** 设置当前线程的 Profile。仅 AgentService 调用。 */
-    public static void set(Profile profile);
-
-    /** 获取当前 Profile。工具/服务可在执行期间调用。 */
-    public static Profile current();
-
-    /** 清除当前 Profile。AgentService finally 块中调用。 */
-    public static void clear();
+  public static void set(Profile profile);
+  public static Profile current();
+  public static void clear();
 }
 ```
 
-### 6. ContextLoader
+### 9. ContextLoader（oryxos-core）
 
 ```java
 package com.oryxos.core;
@@ -157,27 +205,22 @@ package com.oryxos.core;
 import java.nio.file.Path;
 
 /**
- * 上下文加载器：读取 Bootstrap + AGENT.md 正文 + Skill 元数据。
- * 无缓存——每次调用都重新读文件。
+ * 上下文加载器：按 Profile 的 bootstrap/skills 字段读取 Bootstrap 与 SKILL.md 正文。
+ * 无缓存——每次调用都重新读文件；Bootstrap 缺失 WARN、Skill 引用缺失报错。
  */
 public class ContextLoader {
 
-    /**
-     * @param workspaceDir .oryxos/ 工作区根路径
-     */
-    public ContextLoader(Path workspaceDir);
+  public ContextLoader(Path workspaceDir);
 
-    /**
-     * 加载当前 Profile 的完整上下文。
-     *
-     * @param profile Agent Profile（取 bootstrap、skills 字段）
-     * @return 拼接好的 system prompt 文本（Bootstrap + AGENT.md 正文 + Skill 元数据 + 当前日期时间）
-     */
-    public String loadSystemPrompt(Profile profile);
+  /**
+   * @param profile Agent Profile（取 bootstrap、skills 字段）
+   * @return Bootstrap + SKILL.md 正文拼接文本（角色设定由 PromptBuilder 从 identity.prompt 拼入）
+   */
+  public String loadSystemPrompt(Profile profile);
 }
 ```
 
-### 7. ToolRegistry（接口定义，第 20 节实现）
+### 10. ToolRegistry（接口定义，第 20 节实现 — oryxos-core）
 
 ```java
 package com.oryxos.core;
@@ -186,53 +229,39 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface ToolRegistry {
-    /** 按名称查找工具。 */
-    Optional<OryxTool> get(String name);
-
-    /** 列出全部已注册工具。 */
-    Collection<OryxTool> listAll();
+  Optional<OryxTool> get(String name);
+  Collection<OryxTool> listAll();
 }
 ```
 
-### 8. SessionManager（接口定义，第 18 节实现）
+### 11. ToolInvocationStore + ToolInvocationRecord（契约 — oryxos-core，第 20 节起写库）
 
 ```java
 package com.oryxos.core;
 
-import java.util.Optional;
+/** 工具审计存储契约（依赖倒置）：core 定义、storage JPA 实现. */
+public interface ToolInvocationStore {
+  void save(ToolInvocationRecord record);
+}
+
+/** 工具审计值对象. */
+public record ToolInvocationRecord(
+    String sessionId,
+    String toolName,
+    String inputJson,
+    String resultJson,
+    boolean success,
+    String errorMessage,
+    long durationMs,
+    java.time.LocalDateTime createdAt) {}
+```
+
+### 12. SessionManager（接口定义，第 18 节实现 — oryxos-core）
+
+```java
+package com.oryxos.core;
 
 public interface SessionManager {
-    /** 持久化 Session。 */
-    void save(Session session);
-
-    /** 按 ID 查找 Session。 */
-    Optional<Session> findById(String sessionId);
-}
-```
-
-### 9. MemoryService（接口定义，第 22 节实现）
-
-```java
-package com.oryxos.core;
-
-/**
- * 记忆统一门面。第 22 节完整实现，本节只定义接口。
- */
-public interface MemoryService {
-    /** 加载完整记忆上下文（注入 PromptBuilder 第二部分）。 */
-    String loadMemoryContext(String profileName);
-}
-```
-
-### 10. Sandbox（接口定义，第 24 节实现）
-
-```java
-package com.oryxos.core;
-
-/**
- * Sandbox 接口。第 24 节完整实现，本节只定义接口。
- */
-public interface Sandbox {
-    void enforce(SandboxAction action);
+  void save(Session session);
 }
 ```

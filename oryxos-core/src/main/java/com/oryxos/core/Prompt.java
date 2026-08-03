@@ -4,19 +4,29 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * 一次 LLM 调用的输入：用户消息 + 本次可用的工具列表.
+ * 一次 LLM 调用的输入：system prompt + 多轮消息 + 本次可用的工具列表.
  *
- * <p>工具列表可选：纯对话不传工具，ReAct Loop 推理轮次才带工具 schema.
+ * <p>第 17 节扩展：新增 {@code systemMessage} 与 {@code messages} 承载 ReAct 多轮完整上下文， 保留 {@code userMessage}
+ * 与旧构造器向后兼容——第 16 节单轮场景与既有测试不受影响.
  */
-public record Prompt(String userMessage, List<OryxTool> availableTools) {
+public record Prompt(
+    String userMessage,
+    List<Session.Message> messages,
+    String systemMessage,
+    List<OryxTool> availableTools) {
 
-  /** 防御性拷贝. */
   public Prompt {
-    availableTools =
-        availableTools != null ? List.copyOf(availableTools) : Collections.emptyList();
+    messages = messages != null ? List.copyOf(messages) : Collections.emptyList();
+    availableTools = availableTools != null ? List.copyOf(availableTools) : Collections.emptyList();
   }
 
+  /** 第 16 节兼容构造器：单条用户消息 + 工具列表. */
+  public Prompt(String userMessage, List<OryxTool> availableTools) {
+    this(userMessage, Collections.emptyList(), null, availableTools);
+  }
+
+  /** 第 16 节兼容构造器：仅用户消息. */
   public Prompt(String userMessage) {
-    this(userMessage, Collections.emptyList());
+    this(userMessage, Collections.emptyList(), null, Collections.emptyList());
   }
 }

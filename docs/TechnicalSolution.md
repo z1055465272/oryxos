@@ -293,7 +293,7 @@ OryxOS **主推**的接入方式。业务方不写代码，只写一个 Agent �
 
 定义一个 Agent = 写一个目录 `.oryxos/agents/<name>/`：`AGENT.md` = frontmatter（运行配置）加任务说明正文，外加可选的 `skills/` 公共 Skill 软连接、`scripts/*.py`、`REFERENCE.md`。一个目录就是一个自足的 Agent。
 
-加载走三层渐进式披露：`AGENT.md` 正文常驻；当前 Agent 绑定 Skill 的 name/description/本地路径每轮注入；Skill 正文、参考与脚本经底座 `read_file`/`shell` 按需读取或运行。OryxOS 不解析任务步骤、不做工作流引擎。
+加载分两段（宪法 v1.2.0）：**核心阶段** ContextLoader 按 Profile 的 `skills` 字段预载 SKILL.md 正文拼入 system prompt（第 17 节）；**第 29 节软连接绑定落地后**走三层渐进式披露——`AGENT.md` 正文常驻，当前 Agent 绑定 Skill 的 name/description/本地路径每轮注入，Skill 正文、参考与脚本经底座 `read_file`/`shell` 按需读取或运行。OryxOS 不解析任务步骤、不做工作流引擎。
 
 > 注意 `AGENT.md` 的解析由 `AgentLoader` / `ContextLoader`（8.3）负责，不在 Tool 模块里——它是 prompt 的输入源、不是可执行 Tool（见宪法原则四与 11.1）。
 
@@ -494,9 +494,9 @@ Web Service 是 OryxOS 的对外完整门面，业务系统通过 REST API 接�
 
 ### 8.3 上下文加载（Bootstrap + AGENT.md 正文）
 
-> **调整说明：** Bootstrap 与 `AGENT.md` 正文全量注入；Agent `skills/` 绑定的公共 Skill 每轮只注入 name/description/本地路径，正文与附属资源不预载，经 `read_file`/`shell` 按需取。
+> **调整说明（2026-08-03，随第 17 节宪法 v1.2.0）：** Bootstrap 与 `AGENT.md` 正文全量注入；核心阶段 ContextLoader 按 Profile 的 `skills` 字段定位公共 Skill 并**预载 SKILL.md 正文**拼入 system prompt（附件参考/脚本不预载，经 `read_file`/`shell` 按需取）。第 29 节软连接绑定落地后，改为只注入已绑定 Skill 的 name/description/本地路径，正文经 `read_file` 命中后读取。
 
-**`ContextLoader` 模块。** 按 Profile 的 `bootstrap` 字段读取 Bootstrap，同时现读 Agent 自己 `AGENT.md` 正文；每次组装 prompt 时重新扫描 Agent `skills/` 的相对软连接，验证真实目标位于公共 Skill 根，只注入 Skill frontmatter 的 name/description 与 Agent 本地绝对读取路径。Skill 正文、脚本和参考不在这里预载，由模型经 `read_file`/`shell` 现取。全部无缓存，修改或重新绑定后下一轮立即生效。
+**`ContextLoader` 模块。** 按 Profile 的 `bootstrap` 字段读取 Bootstrap（缺失 WARN）；按 Profile 的 `skills` 字段定位公共 Skill（`.oryxos/skills/<name>/SKILL.md`，缺失报错）并预载正文拼入 system prompt。角色设定由 `Profile.identity.prompt` 提供（核心阶段 Profile 派生自 YAML/AGENT.md frontmatter）；`AGENT.md` 正文的现读随第 29 节 Agent 目录机制落地。Skill 附属参考/脚本不预载，由模型经 `read_file`/`shell` 现取。全部无缓存，修改后下一轮立即生效。
 
 ### 8.4 Channel 接入
 

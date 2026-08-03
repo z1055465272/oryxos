@@ -13,6 +13,10 @@ import com.oryxos.core.OryxTool;
 import com.oryxos.core.Profile;
 import com.oryxos.core.Profile.ProviderRef;
 import com.oryxos.core.Prompt;
+import com.oryxos.core.Response;
+import com.oryxos.core.Session;
+import com.oryxos.core.ToolCall;
+import com.oryxos.core.ToolResult;
 import com.oryxos.storage.LlmCall;
 import com.oryxos.storage.LlmCallRepository;
 import java.util.List;
@@ -21,8 +25,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.ToolResponseMessage;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 
 class ProviderServiceTest {
@@ -44,11 +54,13 @@ class ProviderServiceTest {
         new DefaultProviderService(
             Map.of("deepseek", deepseekModel, "kimi", kimiModel), adapter, audit);
 
-    ChatResponse mockResponse = mock(ChatResponse.class);
+    // 用真实 ChatResponse（含 Generation/AssistantMessage）让 Core 转换路径可跑通
+    ChatResponse plainResponse =
+        new ChatResponse(List.of(new Generation(new AssistantMessage("hello"))));
     when(deepseekModel.call(any(org.springframework.ai.chat.prompt.Prompt.class)))
-        .thenReturn(mockResponse);
+        .thenReturn(plainResponse);
     when(kimiModel.call(any(org.springframework.ai.chat.prompt.Prompt.class)))
-        .thenReturn(mockResponse);
+        .thenReturn(plainResponse);
   }
 
   @Test
@@ -102,6 +114,66 @@ class ProviderServiceTest {
     assertThat(options.getInternalToolExecutionEnabled()).isFalse();
 
     assertThat(captured.getInstructions()).isNotEmpty();
+  }
+
+  @Test
+  @DisplayName("多轮消息被翻译成Spring AI消息序列")
+  void mapsMultiTurnMessages_intoSpringAiMessages() {
+    Session session = new Session("s-1", "test", "cli", "u-1");
+    session.appendUserMessage("查天气");
+    ToolCall call = new ToolCall("call-1", "http_get", "{\"city\":\"beijing\"}");
+    session.appendAssistant("我用 http_get 查", List.of(call));
+    session.appendToolResult(call, ToolResult.ok("{\"temp\":-5}"));
+
+    Prompt prompt = new Prompt("查天气", session.messages(), "You are 运维小欧", List.of());
+
+    service.chat("s-1", profileUsing("deepseek"), prompt);
+
+    var captor = ArgumentCaptor.forClass(org.springframework.ai.chat.prompt.Prompt.class);
+    verify(deepseekModel).call(captor.capture());
+    List<Message> messages = captor.getValue().getInstructions();
+
+    // system + user + assistant(带 toolCall) + tool 结果，四段完整
+    assertThat(messages).hasSize(4);
+    assertThat(messages.get(0)).isInstanceOf(SystemMessage.class);
+    assertThat(messages.get(1)).isInstanceOf(UserMessage.class);
+    assertThat(messages.get(2)).isInstanceOf(AssistantMessage.class);
+    assertThat(messages.get(3)).isInstanceOf(ToolResponseMessage.class);
+
+    AssistantMessage assistant = (AssistantMessage) messages.get(2);
+    assertThat(assistant.getToolCalls()).hasSize(1);
+    assertThat(assistant.getToolCalls().get(0).id()).isEqualTo("call-1");
+    assertThat(assistant.getToolCalls().get(0).name()).isEqualTo("http_get");
+
+    ToolResponseMessage toolResponse = (ToolResponseMessage) messages.get(3);
+    assertThat(toolResponse.getResponses().get(0).id()).isEqualTo("call-1");
+    assertThat(toolResponse.getResponses().get(0).name()).isEqualTo("http_get");
+    assertThat(toolResponse.getResponses().get(0).responseData()).isEqualTo("{\"temp\":-5}");
+  }
+
+  @Test
+  @DisplayName("返回自有Response_携带文本与工具调用")
+  void returnsOryxosResponse_withTextAndToolCalls() {
+    ChatResponse toolResponse =
+        new ChatResponse(
+            List.of(
+                new Generation(
+                    new AssistantMessage(
+                        "我来查",
+                        Map.of(),
+                        List.of(
+                            new AssistantMessage.ToolCall(
+                                "call-9", "function", "http_get", "{\"url\":\"a\"}"))))));
+    when(deepseekModel.call(any(org.springframework.ai.chat.prompt.Prompt.class)))
+        .thenReturn(toolResponse);
+
+    Response response = service.chat("s-1", profileUsing("deepseek"), new Prompt("查天气"));
+
+    assertThat(response.text()).isEqualTo("我来查");
+    assertThat(response.hasToolCalls()).isTrue();
+    assertThat(response.toolCalls()).hasSize(1);
+    assertThat(response.toolCalls().get(0).name()).isEqualTo("http_get");
+    assertThat(response.toolCalls().get(0).id()).isEqualTo("call-9");
   }
 
   @Test

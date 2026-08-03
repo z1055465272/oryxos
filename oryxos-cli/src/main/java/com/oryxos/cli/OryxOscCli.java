@@ -12,7 +12,7 @@ import picocli.CommandLine.IVersionProvider;
  *
  * <p>裸命令（无子命令）时打印版本信息；后续按 12 个子命令分发 （init / status / chat / serve / gateway / profile / provider /
  * tool / session）。 需要 LLM 调用的子命令（chat / serve / gateway）内部再启动 Spring 上下文， 不需要 Spring 的命令（init /
- * profile list）直接走文件操作，保证启动快。
+ * profile list）直接走文件操作，保证启动快.
  */
 @Command(
     name = "oryxos",
@@ -35,7 +35,7 @@ public class OryxOscCli implements Runnable {
     System.exit(exitCode);
   }
 
-  /** 版本信息：优先读 jar manifest 的 Implementation-Version（Maven 打包自动写入）， 读不到时回退到与 pom 一致的常量。 */
+  /** 版本信息：优先读 jar manifest 的 Implementation-Version（Maven 打包自动写入）， 读不到时回退到与 pom 一致的常量. */
   static class VersionProvider implements IVersionProvider {
 
     private static final String FALLBACK_VERSION = "1.0.0-SNAPSHOT";

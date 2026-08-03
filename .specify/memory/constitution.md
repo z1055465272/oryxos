@@ -48,27 +48,26 @@ Map<String, ChatModel> providerMap = Map.of(
 );
 ```
 
-### IV. 一个目录 = 一个 Agent；Skill 以本地软连接绑定并渐进披露
+### IV. 一个目录 = 一个 Agent；Skill 绑定与加载
 
 One agent = one directory `.oryxos/agents/<name>/` containing `AGENT.md`
 (frontmatter = runtime profile via `AgentLoader.deriveProfile`, body = task
 instructions) plus optional `skills/`, `scripts/`, and `REFERENCE.md`.
 Public Skill entities live in `.oryxos/skills/<name>/`.
 
-Agent-visible skills MUST be expressed only as **relative symlinks** under
-`.oryxos/agents/<agent>/skills/<name>/` pointing at public entities; the
-symlink set is the single source of truth for bindings, and `AGENT.md`
-frontmatter MUST NOT declare a `skills:` list.
+**Skill 加载（核心阶段，按第 17 节课件）**: ContextLoader 每轮按 Profile 的
+`skills` 字段定位公共 Skill（`.oryxos/skills/<name>/SKILL.md`），把 SKILL.md
+**正文直接拼入 system prompt**（随 Bootstrap 一起注入），每次组装都重新读文件、
+不缓存。显式引用的 Skill 缺失 MUST 报错，Bootstrap 缺失至少 WARN。Skill 附属
+参考/脚本不预载，由模型经 `read_file`/`shell` 按需取用。
 
-Loading follows three-tier progressive disclosure: each turn injects only the
-bound skill's name + description + local absolute read path; on model hit the
-`SKILL.md` body is read via `read_file`; reference/script attachments are
-read or run on demand. Bodies MUST NOT be preloaded, no `use_skill` tool MAY
-be added, and Skills MUST NOT enter `ToolRegistry`.
-
-CRUD and startup recovery MUST detect dangling / escaped / invalid-target /
-name-mismatch / stale-reference symlinks. Deleting a public Skill that is
-referenced MUST be refused by default and the referencing Agent reported.
+**软连接绑定与渐进披露（第 29 节完整落地）**: Agent 可见 Skill 的完整形态由
+`.oryxos/agents/<agent>/skills/<name>` 下指向公共实体的**相对软连接**表达
+（软连接集合是唯一绑定真相源）；届时 ContextLoader 每轮注入已绑定 Skill 的
+name + description + 本地绝对读取路径，正文经 `read_file` 命中后读取。CRUD 与
+启动恢复 MUST 检测 dangling / escaped / invalid-target / name-mismatch /
+stale-reference 软连接；公共 Skill 被引用时默认拒绝删除并返回引用 Agent。
+任何情况下 Skills MUST NOT 进入 `ToolRegistry`，不得新增 `use_skill` 工具。
 
 ### V. 审计表 Day One 写入
 
@@ -137,4 +136,7 @@ spec, plan, tasks, and implementation artifact.
 - **合规审查**: 每个 user story 的 plan 与代码审查 MUST 验证 constitution 合规；复杂度 MUST 有正当理由
 - **运行时指导**: 开发遵循 `CLAUDE.md`；需求见 `docs/DemandAnalysis.md`，技术方案见 `docs/TechnicalSolution.md`，AI 编程实施见 `docs/AiProgrammingGuilde.md`
 
-**Version**: 1.1.0 | **Ratified**: 2026-08-02 | **Last Amended**: 2026-08-02
+**Version**: 1.2.0 | **Ratified**: 2026-08-02 | **Last Amended**: 2026-08-03
+
+**变更记录**:
+- **1.2.0 (2026-08-03)**: 原则四 Skill 加载规则按第 17 节课件修正——核心阶段 ContextLoader 预载 SKILL.md 正文拼入 system prompt（原先的"只注入元数据、正文不预载"推迟到第 29 节软连接绑定落地时实施）。变更原因：第 17 节课件明确"按 Profile 的 bootstrap 和 skills 字段读文件、拼成文本"，核心阶段以简单可靠为先，渐进披露在技能体系完整落地时再启用。

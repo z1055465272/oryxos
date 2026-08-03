@@ -3,7 +3,7 @@ package com.oryxos.web.api;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * 统一错误响应体。全局异常处理器把它作为 HTTP body 返回。
+ * 统一错误响应体。全局异常处理器把它作为 HTTP body 返回.
  *
  * @param errorCode 稳定错误码（与 HTTP 状态无关，前端据此做分支）
  * @param message 人类可读的错误信息

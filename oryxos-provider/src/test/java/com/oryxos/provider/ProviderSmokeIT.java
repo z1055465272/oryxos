@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import com.oryxos.core.Profile;
 import com.oryxos.core.Profile.ProviderRef;
 import com.oryxos.core.Prompt;
+import com.oryxos.core.Response;
 import com.oryxos.storage.LlmCallRepository;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
@@ -60,15 +60,13 @@ class ProviderSmokeIT {
             List.of(),
             new Profile.Settings(10, 20));
 
-    ChatResponse response = service.chat("smoke-1", profile, new Prompt("Say hello in one word."));
+    Response response = service.chat("smoke-1", profile, new Prompt("Say hello in one word."));
 
     assertThat(response).isNotNull();
-    assertThat(response.getResults()).isNotEmpty();
-    String content = response.getResults().get(0).getOutput().getText();
-    assertThat(content).isNotBlank();
+    assertThat(response.text()).isNotBlank();
 
     System.out.println("=== ProviderSmokeIT: LLM response ===");
-    System.out.println(content);
+    System.out.println(response.text());
     System.out.println("=== PASS: real call returned non-empty response ===");
   }
 }

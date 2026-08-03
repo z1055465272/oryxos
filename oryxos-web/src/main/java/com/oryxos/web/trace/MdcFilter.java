@@ -12,7 +12,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** 为每个 HTTP 请求写入 traceId（MDC），prod 日志用它串联一次请求的全链路日志。 客户端可通过 X-Trace-Id 请求头传入，否则服务端生成。 */
+/** 为每个 HTTP 请求写入 traceId（MDC），prod 日志用它串联一次请求的全链路日志。 客户端可通过 X-Trace-Id 请求头传入，否则服务端生成. */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class MdcFilter extends OncePerRequestFilter {

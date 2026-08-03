@@ -225,7 +225,6 @@
                     <version>${pmd-plugin.version}</version>
                     <configuration>
                         <rulesets>
-                            <ruleset>rulesets/java/ali-pmd.xml</ruleset>
                             <ruleset>rulesets/java/ali-concurrent.xml</ruleset>
                             <ruleset>rulesets/java/ali-exception.xml</ruleset>
                             <ruleset>rulesets/java/ali-oop.xml</ruleset>

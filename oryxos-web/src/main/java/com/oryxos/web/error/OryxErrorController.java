@@ -11,11 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * Spring Boot 错误转发兜底：把容器默认的 /error 页面统一换成标准 JSON。 覆盖 404（未匹配路径，静态资源与 Swagger UI 不受影响）与其它容器级错误，
- * 让所有错误响应都是统一的 {@link ErrorResponse} 结构。
+ * 让所有错误响应都是统一的 {@link ErrorResponse} 结构.
  */
 @Controller
 public class OryxErrorController implements ErrorController {
 
+  /** 处理容器转发的 /error 请求：按状态码映射为标准 JSON 错误响应. */
   @RequestMapping("/error")
   public ResponseEntity<ErrorResponse> handleError(HttpServletRequest request) {
     Object statusAttr = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);

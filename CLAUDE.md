@@ -90,13 +90,15 @@ Map<String, ChatModel> providerMap = Map.of(
 );
 ```
 
-### 原则四：一个目录 = 一个 Agent；Skill 以本地软连接绑定并渐进披露
+### 原则四：一个目录 = 一个 Agent；Skill 绑定与加载
 
 **一个目录 = 一个 Agent**：`.oryxos/agents/<name>/` 里 `AGENT.md` = frontmatter（运行配置）+ 正文（任务指令），外加可选 `skills/`（Skill 绑定视图）、`scripts/`、`REFERENCE.md`。`AgentLoader.deriveProfile(agentDir)` 把 frontmatter 派生成底座认识的 `Profile`；`.oryxos/profiles/` 取消。
 
-公共 Skill 实体统一存放在 `.oryxos/skills/<name>/`。Agent 可见的 Skill 只由 `.oryxos/agents/<agent>/skills/<name>` 下指向公共实体的**相对软连接**表达；软连接集合是唯一绑定真相源，`AGENT.md` frontmatter 不再声明 `skills:`。
+公共 Skill 实体统一存放在 `.oryxos/skills/<name>/`。
 
-加载走三层渐进式披露：每轮 prompt 只注入当前 Agent 已绑定 Skill 的 `name + description + 本地绝对读取路径`；模型命中后用 `read_file` 读取 `SKILL.md` 正文；Skill 附属参考/脚本继续按需读取或运行。不得预载正文、不得新增 `use_skill`、Skill 不进 `ToolRegistry`。CRUD 与启动恢复必须检测 dangling/escaped/invalid-target/name-mismatch/stale-reference；公共 Skill 被引用时默认拒绝删除并返回引用 Agent。
+**Skill 加载（核心阶段，按第 17 节课件）**：ContextLoader 每轮按 Profile 的 `skills` 字段定位公共 Skill（`.oryxos/skills/<name>/SKILL.md`），把 SKILL.md 正文直接拼入 system prompt（随 Bootstrap 一起注入），每次组装都重新读文件、不缓存。显式引用的 Skill 缺失必须报错，Bootstrap 缺失至少 WARN。Skill 附属参考/脚本不预载，由模型经 `read_file`/`shell` 按需取用。
+
+**软连接绑定与渐进披露（第 29 节完整落地）**：Agent 可见 Skill 的完整形态由 `.oryxos/agents/<agent>/skills/<name>` 下指向公共实体的**相对软连接**表达（软连接集合是唯一绑定真相源）；届时 ContextLoader 每轮注入已绑定 Skill 的 `name + description + 本地绝对读取路径`，正文经 `read_file` 命中后读取。CRUD 与启动恢复必须检测 dangling/escaped/invalid-target/name-mismatch/stale-reference；公共 Skill 被引用时默认拒绝删除并返回引用 Agent。任何情况下不得新增 `use_skill`、Skill 不进 `ToolRegistry`。
 
 ### 原则五：审计表 Day One 写入
 
@@ -240,7 +242,7 @@ settings:
 用户消息
   → 追加到 Session 对话历史
   → PromptBuilder 组装 Prompt：
-      [1] system prompt（AGENT.md 正文 + Skill 元数据 + Bootstrap；正文/脚本按需取）← ContextLoader
+      [1] system prompt（角色设定 + Bootstrap + Skill 正文；Skill 附属参考/脚本按需取）← ContextLoader
       [2] 长期记忆（MEMORY.md 全文，超 4000 字自动截断）         ← MemoryService
       [3] 对话历史（最近 max_history_turns 轮）                  ← SessionManager
       [4] 可用 Tool 列表（Function Calling 格式）                ← ToolRegistry
@@ -398,7 +400,7 @@ provider:
 
 - **底座优先于 Agent**：最重要的交付不是某个强大的 Agent，而是让任意 Agent 可靠运行的环境
 - **自实现核心，复用管道**：ReAct 循环手写；LLM 协议适配委托给 Spring AI Alibaba
-- **一个目录 = 一个 Agent**：一个业务 Agent 由一个目录定义——`AGENT.md`（frontmatter 配置 + 正文指令）、可选 `skills/` 公共 Skill 软连接与 `scripts/`；Skill 元数据每轮注入，正文/附属资源经 `read_file`/`shell` 按需取用
+- **一个目录 = 一个 Agent**：一个业务 Agent 由一个目录定义——`AGENT.md`（frontmatter 配置 + 正文指令）、可选 `skills/` 公共 Skill 绑定与 `scripts/`；核心阶段 ContextLoader 预载 SKILL.md 正文随 Bootstrap 注入，Skill 附属资源经 `read_file`/`shell` 按需取用
 - **对接开放标准**：工具用 MCP，Agent 间协作用 A2A，Agent 目录借 Anthropic Agent Skills 的形态（目录 + 渐进式披露）
 - **无状态实例，状态外置**：这是未来走向分布式架构而不需要大改设计的前提
 - **安全是地基，不是补丁**：工具来源管控、最小权限、强制沙箱白名单、凭证走环境变量、完整审计记录从第一天就写入 SQLite

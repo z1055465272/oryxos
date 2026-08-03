@@ -3,7 +3,7 @@ package com.oryxos.web.api;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * OryxOS 统一响应体。所有 REST 端点返回 {@code ApiResponse<T>}。
+ * OryxOS 统一响应体。所有 REST 端点返回 {@code ApiResponse<T>}.
  *
  * @param code 业务码，0 表示成功
  * @param message 提示信息
