@@ -1,7 +1,7 @@
 package com.oryxos.core;
 
 /**
- * 工具执行结果。ReAct 循环把它作为 tool 消息回填给 LLM，并据此决定下一步。
+ * 工具执行结果，ReAct 循环把它作为 tool 消息回填给 LLM，并据此决定下一步.
  *
  * @param success 是否成功
  * @param content 成功时的结果内容

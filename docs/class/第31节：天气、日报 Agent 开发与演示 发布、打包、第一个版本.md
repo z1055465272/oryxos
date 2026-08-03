@@ -49,7 +49,7 @@ oryxos chat --profile weather-daily
 
 **第三步：等真正的钟推，对账。** 把 cron 临时改成几分钟后，看它完整自跑一轮：
 
-![天气 Agent 端到端：定时触发、注入 Skill、查天气、生成建议、推送](../../website/public/images/class-31-1.svg)
+![天气 Agent 端到端：定时触发、注入 Skill、查天气、生成建议、推送](../../images/class-31-1.svg)
 
 对账清单（跟需求文档的验收标准一字对齐）：无人触发；`http_get` 和 `notify` 两次涉外调用都过了白名单、都写进 `tool_invocations`；`llm_calls` 两条；`GET /api/v1/sessions/{id}` 能查到这次自动触发的完整对话；群里收到了消息。
 
@@ -87,7 +87,7 @@ required_tools:
 
 **第四步：调试与对账。** 还是先人推补跑，再看钟推：
 
-![日报 Agent 端到端：定时触发、注入 Skill 和记忆、MCP 拉新闻、组稿、推送](../../website/public/images/class-31-2.svg)
+![日报 Agent 端到端：定时触发、注入 Skill 和记忆、MCP 拉新闻、组稿、推送](../../images/class-31-2.svg)
 
 对账重点比天气 Agent 多两条：**日报内容真的把 AI/芯片条目排在前面**——这是记忆在跨天场景里生效的直接证据，也是最能打动人的一刻，因为这个偏好不在 Skill 里、不在代码里，只在记忆里；**LLM 是自己决定调新闻工具、自己组稿的**——OryxOS 没有解析任何任务步骤，Skill 正文就是全部的"编排"。
 
@@ -101,7 +101,7 @@ mvn clean package             # 产出 fat JAR
 git tag v0.1.0 && git push --tags
 ```
 
-![发布产物：一个 fat JAR + 一个 .oryxos 工作区](../../website/public/images/class-31-3.svg)
+![发布产物：一个 fat JAR + 一个 .oryxos 工作区](../../images/class-31-3.svg)
 
 发布不只是打个包，要按"可运维性验收"的标准过一遍：找一台干净机器（或删掉本地 `.oryxos/`），照着 README 从零走一遍——`java -jar oryxos.jar init`、配 API key 环境变量、配白名单和 webhook、创建两个 Agent、看它们跑起来。**新手 30 分钟内能走完**，这个版本才算能发；哪一步卡住了，说明缺的是文档不是代码。
 

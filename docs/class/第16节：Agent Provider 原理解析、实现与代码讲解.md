@@ -16,7 +16,7 @@ OryxOS 的第一块核心能力是 Provider，也就是对接大模型（LLM）�
 
 具体怎么工作：上层传两样东西进来，一个 **Profile**（一份配置，写了这次用哪个 provider、哪个 model），一段 **Prompt**（要发给模型的内容）。Provider 按 Profile 挑出对应的模型，调用，把结果原样返回。好处是：以后想换模型，只改配置，ReAct 那边一行都不用动。
 
-![Provider 是什么：上层 ReAct 循环通过 ProviderService 调用各家 LLM](../../website/public/images/class-16-1.svg)
+![Provider 是什么：上层 ReAct 循环通过 ProviderService 调用各家 LLM](../../images/class-16-1.svg)
 
 图里 `ChatModel` 是 Spring AI 里代表"一个具体大模型"的对象，一个 provider 对应一个。Provider 干的事，就是从上往下选一条路走通。
 
@@ -32,7 +32,7 @@ OryxOS 的第一块核心能力是 Provider，也就是对接大模型（LLM）�
 
 **第一，把职责划窄。** Provider 要做的事其实很少：挑对模型、发起一次调用、把结果拿回来。就这些。循环怎么转、工具怎么执行、上下文怎么拼，都不归它管。这个边界不划清楚，Provider 会越写越胖，最后和 ReActLoop 缠在一起分不开。
 
-![动手前想清楚：Provider 的职责边界](../../website/public/images/class-16-2.svg)
+![动手前想清楚：Provider 的职责边界](../../images/class-16-2.svg)
 
 **第二，哪些不自己造。** 各家大模型的协议不一样，OpenAI、Anthropic、Gemini 的工具格式各写各的。这些转换 Spring AI Alibaba 已经做好了，我们直接用，不重复造。我们要写的只是薄薄一层 `ProviderService`，套在它上面。
 
@@ -54,7 +54,7 @@ OryxOS 的第一块核心能力是 Provider，也就是对接大模型（LLM）�
 
 一次调用从头到尾是这样走的：
 
-![Provider 架构：ProviderService 按 Profile 选模型、屏蔽各家差异](../../website/public/images/class-16-3.svg)
+![Provider 架构：ProviderService 按 Profile 选模型、屏蔽各家差异](../../images/class-16-3.svg)
 
 对着这个流程，先补一个前置，再分四步写。
 

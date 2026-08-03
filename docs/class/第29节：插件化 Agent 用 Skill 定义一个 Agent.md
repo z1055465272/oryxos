@@ -10,7 +10,7 @@
 
 这个区分是"OS"这个词的关键体现。类比操作系统：进程调度、内存管理、系统调用是 OS 的能力，但 OS 本身不是任何一个程序——程序是跑在上面的可执行文件。对应过来：Provider、ReAct、Tool、Memory、Sandbox、定时、Web Service 是 OryxOS 的内核能力，而**Skill 就是这里的"可执行文件"**——业务方定义一个新 Agent，写的就是一份 Skill。
 
-![Skill + Profile = 一个完整的业务 Agent](../../website/public/images/class-29-1.svg)
+![Skill + Profile = 一个完整的业务 Agent](../../images/class-29-1.svg)
 
 两个角色各管一半，不越界：
 
@@ -31,7 +31,7 @@
 
 **第三，手动路径的生效边界要摸清。** 两份文件的生效时机不一样：**Skill 正文改动即时生效**——`ContextLoader` 每次组装 prompt 都重新读文件、不缓存（跟 22 节 Memory 不缓存是同一个设计），改完保存、下一轮对话就是新的；**新增 Profile 却要重启**——`ProfileRegistry` 和 `AgentScheduler` 都只在启动时扫描注册。这个不对称就是本节代码要补的短板。
 
-![手动定义路径四步：写 Skill、写 Profile、加载生效、自己跑起来](../../website/public/images/class-29-2.svg)
+![手动定义路径四步：写 Skill、写 Profile、加载生效、自己跑起来](../../images/class-29-2.svg)
 
 **第四，能力和入口分两步走。** 补短板的办法是给 `ProfileRegistry` 和 `AgentScheduler` 各加一个**运行时注册方法**。但这节只把方法立好、单独验证，**不做 HTTP 入口**——入口是 30 节 `POST /api/v1/agents` 的事。能力和入口拆开，各自都好验，也不会让这节膨胀。
 
@@ -92,7 +92,7 @@ settings:
 
 **第三步：补运行时注册，去掉"重启"这个尾巴。**
 
-![现在只在启动时注册 vs 本节补上的运行时注册方法](../../website/public/images/class-29-3.svg)
+![现在只在启动时注册 vs 本节补上的运行时注册方法](../../images/class-29-3.svg)
 
 两个方法，各自都是把启动时那套逻辑抽出来复用，不写第二套：
 

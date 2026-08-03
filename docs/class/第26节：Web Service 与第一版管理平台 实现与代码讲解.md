@@ -12,7 +12,7 @@
 
 18 节讲 CLI 时埋过一句：`oryxos serve` 启动 Web Service，26 节细讲——就是现在。`serve` 起来之后，Spring MVC 监听 8080 端口，对外暴露 10 个端点，统一前缀 `/api/v1`，按资源分成六个 Controller：
 
-![核心阶段 10 个端点：六个 Controller 分组](../../website/public/images/class-26-1.svg)
+![核心阶段 10 个端点：六个 Controller 分组](../../images/class-26-1.svg)
 
 这 10 个端点覆盖四类事：**会话管理**（创建、发消息、查历史、归档，4 个）、**Agent 调用**（无状态 invoke，1 个）、**信息查询**（Profile / Memory / Tool，3 个）、**系统状态**（health / info，2 个）。业务系统最常用的两条路：要连续对话就先创建 Session 再多次发消息；要一次性调用就直接 `POST /agents/{name}/invoke`。
 
@@ -74,7 +74,7 @@ public class SessionApiController {
 
 一次请求从进到出的完整链路，以及异常怎么被统一接走：
 
-![请求链路：Controller 校验包装、AgentService 处理、GlobalExceptionHandler 兜底](../../website/public/images/class-26-2.svg)
+![请求链路：Controller 校验包装、AgentService 处理、GlobalExceptionHandler 兜底](../../images/class-26-2.svg)
 
 **第三步：统一异常出口。**
 
@@ -117,7 +117,7 @@ public class GlobalExceptionHandler {
 
 产物是一个 `index.html`（可拆几个 js），放进 `oryxos-web` 模块的 `src/main/resources/static/admin/` 下，由 Spring 直接托管，`serve` 起来后访问 `http://localhost:8080/admin` 就能看：
 
-![管理平台 v1 页面结构：左导航五项，右侧内容区渲染 GET 端点数据](../../website/public/images/class-26-3.svg)
+![管理平台 v1 页面结构：左导航五项，右侧内容区渲染 GET 端点数据](../../images/class-26-3.svg)
 
 **有几样先别做。** Profile 的增删改端点、Memory 的写入端点、Webhook 触发、Prometheus metrics——这些都在扩展阶段清单里；其中"通过 API 定义 Agent"这一块（`/api/v1/agents` 的增删改）是 29、30 节的正题，这节刻意留白。
 

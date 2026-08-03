@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- Java record with compact constructor defensive copies (SpotBugs false positive) -->
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP"/>
+    <Or>
+      <Class name="com.oryxos.core.Profile"/>
+      <Class name="com.oryxos.core.Profile$ChannelRef"/>
+      <Class name="com.oryxos.core.Profile$ScheduleConfig"/>
+      <Class name="com.oryxos.core.Prompt"/>
+    </Or>
+  </Match>
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+    <Or>
+      <Class name="com.oryxos.core.Profile"/>
+      <Class name="com.oryxos.core.Prompt"/>
+      <Class name="com.oryxos.core.ProfileLoader"/>
+    </Or>
+  </Match>
+  <!-- CRLF in file-path logging: false positive, local filenames not user HTTP input -->
+  <Match>
+    <Bug pattern="CRLF_INJECTION_LOGS"/>
+    <Or>
+      <Class name="com.oryxos.core.ProfileLoader"/>
+      <Class name="com.oryxos.provider.DefaultProviderService"/>
+    </Or>
+  </Match>
+  <!-- NP on Path.getFileName(): Files.list() always returns non-null filename for regular files -->
+  <Match>
+    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+    <Class name="com.oryxos.core.ProfileLoader"/>
+  </Match>
+  <!-- Intentional re-throw: audit-then-throw pattern for failure audit -->
+  <Match>
+    <Bug pattern="THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"/>
+    <Class name="com.oryxos.provider.DefaultProviderService"/>
+  </Match>
+</FindBugsFilter>

@@ -14,5 +14,24 @@
     <name>oryxos-core</name>
     <description>核心引擎：ReActLoop、PromptBuilder、ToolExecutor、ContextLoader、Session、Profile、OryxTool 抽象。所有模块依赖它</description>
 
-    <!-- 基础模块，保持纯净无外部依赖 -->
+    <dependencies>
+        <!-- SnakeYAML：解析 Profile YAML（版本由 spring-boot-starter-parent 管理） -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+        <!-- SLF4J API：日志门面，仅 API 不绑定实现 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- 测试 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
 </project>

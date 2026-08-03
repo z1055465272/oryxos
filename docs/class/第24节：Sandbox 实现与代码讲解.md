@@ -22,7 +22,7 @@
 
 全部放在 `oryxos-tool` 模块，和 `FileTools`/`ShellTools`/`HttpTools` 挨在一起——它们本来就是一伙的，不需要往 `oryxos-core` 塞新概念。
 
-![Sandbox 拦截流程：三个内置 Tool 调 enforce，通过则执行，拒绝则抛异常](../../website/public/images/class-24-1.svg)
+![Sandbox 拦截流程：三个内置 Tool 调 enforce，通过则执行，拒绝则抛异常](../../images/class-24-1.svg)
 
 ## 三、代码怎么写
 
@@ -240,11 +240,11 @@ public ToolResult httpGet(String url) {
 
 `SandboxViolationException` 是一个普通的 `RuntimeException`，从 Tool 的 `execute` 里抛出来，会被 `ToolExecutor` 里已经写好的 try/catch 接住——17 节讲过，工具执行失败也要记进 `tool_invocations`，`success=false`，`error_message` 存异常信息。这里不需要为 Sandbox 单独写一条审计路径，`SandboxViolationException` 的 `message`（比如"命令不在白名单内: rm"）会原样存进 `error_message`，模型在下一轮对话里能看到这条失败原因，从而知道这条路走不通。
 
-![类结构图：Sandbox 接口、WhitelistSandbox 实现、SandboxAction 值对象](../../website/public/images/class-24-2.svg)
+![类结构图：Sandbox 接口、WhitelistSandbox 实现、SandboxAction 值对象](../../images/class-24-2.svg)
 
 完整的一次失败调用，串起来是这样的：
 
-![失败链路时序图：模型生成命令、Sandbox 拦截、写入 tool_invocations、结果回填](../../website/public/images/class-24-3.svg)
+![失败链路时序图：模型生成命令、Sandbox 拦截、写入 tool_invocations、结果回填](../../images/class-24-3.svg)
 
 这张图想说明的是：**Sandbox 拒绝和 Sandbox 放行，走的是完全同一条后续路径**，唯一的差别就是 `success` 是 `true` 还是 `false`。这也从侧面验证了当初的设计是对的——如果 Sandbox 违规需要一条专门的处理逻辑，说明它没有被自然地融进已有的工具执行框架。
 

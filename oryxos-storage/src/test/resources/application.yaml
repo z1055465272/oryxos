@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:sqlite:target/test-llm-calls.db
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: none
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql

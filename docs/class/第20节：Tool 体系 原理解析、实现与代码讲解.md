@@ -12,7 +12,7 @@ Provider 让 Agent 会调模型，ReAct 让它会思考，但到现在它还只�
 
 大模型本身只会生成文字，它读不了你磁盘上的文件，也发不出一个 HTTP 请求。想让 Agent 真的干活，就得给它一批能操作外部世界的工具。**LLM 决定"调哪个工具、传什么参数"（靠 16 节说过的 Function Calling），OryxOS 负责把这个工具真正执行掉、再把结果递回给 LLM。** 这正是 ReAct 循环里 "Act" 那一步干的事。
 
-![Tool 是什么：LLM 想、OryxOS 执行、外部世界干活](../../website/public/images/class-20-1.svg)
+![Tool 是什么：LLM 想、OryxOS 执行、外部世界干活](../../images/class-20-1.svg)
 
 OryxOS 的 Tool 分两类：
 
@@ -31,7 +31,7 @@ OryxOS 的 Tool 分两类：
 
 **第二，Plugin Tool 给三档接入方式，门槛从低到高。** 不同的人扩展能力的水平不一样，所以给三条路，让业务方按需选：
 
-![Plugin Tool 三档接入方式对比](../../website/public/images/class-20-2.svg)
+![Plugin Tool 三档接入方式对比](../../images/class-20-2.svg)
 
 选择标准就一句话：**能用方式一就不用方式二，能用方式二就不用方式三。** 因为方式一最优雅——业务方只描述"想干什么"，具体调哪个工具、怎么组合，交给 LLM 自己想。比如"每天早上把昨天的 GitHub PR 进度推到 Slack"，写一份 markdown、复用现成的 github-mcp 和 slack-mcp，一行代码都不用写。
 
@@ -112,7 +112,7 @@ public String httpGet(@ToolParam("要请求的完整 URL") String url) {
 
 **工具怎么汇总、怎么被调。** 启动时 `ToolRegistry` 把三种来源的工具全扫进来、统一成 `OryxTool`；每个 Agent 启动时再按 Profile 的 `tools` 字段，过滤出自己能用的那批。真正执行时，走的是 17 节讲过的 `ToolExecutor`，流程是这样：
 
-![Tool 执行链路：LLM 想调、校验白名单、执行、写审计](../../website/public/images/class-20-3.svg)
+![Tool 执行链路：LLM 想调、校验白名单、执行、写审计](../../images/class-20-3.svg)
 
 **看测试用例。** Plugin Tool 写完得能验。一个 Java Plugin Tool 的测试其实很朴素——给输入、调 execute、断言结果，顺便验一下白名单会拦（这两个用例会收编进下面第四部分的 harness）：
 

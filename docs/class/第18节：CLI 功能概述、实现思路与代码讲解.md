@@ -20,7 +20,7 @@ OryxOS 打包出来是一个可执行 JAR，`OryxOsCli` 就是整个程序的 `m
 
 放到整体架构里看，OryxOS 有两个"人推"入口：**CLI 管本地交互和调试，Web Service 管业务系统通过 REST API 集成**（后面 25 节还会加上第三种触发源——定时任务的"钟推"）。所有入口的消息最后都汇进同一个 ReAct 引擎。
 
-![两个入口汇入同一个 ReAct 引擎：CLI 和 Web Service](../../website/public/images/class-18-1.svg)
+![两个入口汇入同一个 ReAct 引擎：CLI 和 Web Service](../../images/class-18-1.svg)
 
 所以 CLI 在这一层的角色很清楚：**它是消息进出的门，不是干活的人。** 干活的是引擎和下面三块能力。
 
@@ -32,7 +32,7 @@ CLI 看着杂（12 个命令），但每个命令要做的事都很浅。动手�
 
 **第一，CLI 只做"入口"，不碰 Agent 逻辑。** 一个 `chat` 命令的活其实就三步：读用户输入 → 交给引擎处理 → 把结果打印出来。它自己不想、不调模型、不执行工具，这些全在引擎里。想清楚这个边界，CLI 的代码就薄得下来。
 
-![CLI 负责什么、不管什么](../../website/public/images/class-18-2.svg)
+![CLI 负责什么、不管什么](../../images/class-18-2.svg)
 
 **第二，命令分两类，为的是启动够快。** Spring Boot 在 JDK 21 下启动要 2~4 秒。对 `serve` 这种常驻服务无所谓，但对 `oryxos profile list` 这种"看一眼就退"的命令，等 4 秒才出结果太难受。所以命令分两类：
 
@@ -55,7 +55,7 @@ CLI 看着杂（12 个命令），但每个命令要做的事都很浅。动手�
 
 先看最典型、也最能说明问题的 `chat` 命令。它的交互流程是这样：
 
-![chat 命令交互流程：读输入、判断退出、交给引擎、打印结果](../../website/public/images/class-18-3.svg)
+![chat 命令交互流程：读输入、判断退出、交给引擎、打印结果](../../images/class-18-3.svg)
 
 **chat 命令（CliChannel）。** 它读 stdin、写 stdout，维护一个当前 Session，每收到一行就交给引擎处理，直到用户输入 `/quit`。骨架大概长这样：
 

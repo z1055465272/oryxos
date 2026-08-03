@@ -10,7 +10,7 @@
 
 对外的资源就是 **Agent** 这一个概念。业务方心智里创建的是"一个每天推日报的 Agent"，不是"一份 Skill 加一份 Profile"——所以 API 不拆成 Skill 和 Profile 两套 CRUD 让调用方自己拼装，而是一个入口收进来、内部拆成两个动作。四个端点，挂在 26 节已有的 `AgentApiController` 上（那里已经有 `POST /agents/{name}/invoke`）：
 
-![四个端点包装同一套底层能力](../../website/public/images/class-30-2.svg)
+![四个端点包装同一套底层能力](../../images/class-30-2.svg)
 
 这组接口做完，26 节管理平台"只读"的限制同时解除：加一个"新建 Agent"表单，管理平台从"能看"变成"真能管"。
 
@@ -76,7 +76,7 @@ public class AgentApiController {
 
 **第二步：编排者 AgentLifecycleService。** 一次 `create` 从头到尾：
 
-![POST /agents 编排流程：校验、写 Skill、注册 Profile、注册定时、200 OK](../../website/public/images/class-30-1.svg)
+![POST /agents 编排流程：校验、写 Skill、注册 Profile、注册定时、200 OK](../../images/class-30-1.svg)
 
 ```java
 @Service

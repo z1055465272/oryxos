@@ -12,7 +12,7 @@
 
 对照上一节的结论：接口先行、核心阶段文件式、三层记忆（核心/会话/归档）、写入靠 Agent 主动调 `save_memory`（不做自动提炼）。这节要交付的东西，就是把这几句话变成真实存在的类。
 
-![Memory 架构：MemoryService 门面统一收口 SessionManager 和 LongTermMemory](../../website/public/images/class-22-1.svg)
+![Memory 架构：MemoryService 门面统一收口 SessionManager 和 LongTermMemory](../../images/class-22-1.svg)
 
 ---
 
@@ -24,7 +24,7 @@
 
 `MEMORY.md` 内部长这样，一个文件、两个区块，读写规则完全不同：
 
-![MEMORY.md 内部结构：核心记忆区与归档记忆区](../../website/public/images/class-22-2.svg)
+![MEMORY.md 内部结构：核心记忆区与归档记忆区](../../images/class-22-2.svg)
 
 **第三，几个坑，提前想到。**
 
@@ -129,7 +129,7 @@ public class MemoryTools {
 
 坑一（不缓存）最值得单独验一遍，因为它是最容易被后来者"优化"掉的一条：
 
-![无缓存读写验证流程：save_memory 写入后 recall_memory 立刻可见](../../website/public/images/class-22-3.svg)
+![无缓存读写验证流程：save_memory 写入后 recall_memory 立刻可见](../../images/class-22-3.svg)
 
 **本节交付物**（Spec-Kit 拆解锚点）：
 

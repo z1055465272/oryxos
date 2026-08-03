@@ -10,7 +10,7 @@ CLI（18 节）给了 Agent 一个能亲手操作的入口，但目前这个入�
 
 CLI 和 Web Service 都是"人推"：有人发起一次调用，Agent 处理完直接把响应返回给发起者，走的是同一条请求-响应链路，不需要额外的推送机制。但一旦触发源变成"到点自动"（定时查天气、每天汇总科技新闻），这条链路就断了——没有人在另一端等着接收响应，Agent 必须自己决定把结果送到哪、怎么送。
 
-![入站 ChannelAdapter 与出站 NotifyChannelAdapter 对称关系](../../website/public/images/class-19-1.svg)
+![入站 ChannelAdapter 与出站 NotifyChannelAdapter 对称关系](../../images/class-19-1.svg)
 
 **如果没有这个模块会怎样。** 每个业务方定义 Agent 时都要自己在 Skill 里手写"调 `http_post` 打这个 webhook URL"，或者自己找一个企业微信/飞书的 MCP server 配上——每个 Skill 各写一份，重复且不统一。`NotifyTools` 就是要把"往外推一条消息"这件最常见的事统一掉——这也是后面 Memory（21、22 节）、Sandbox（23、24 节）会反复用到的"接口先行"设计习惯的第一次亮相。
 
@@ -123,7 +123,7 @@ public class NotifyTools {
 
 一行行看关键的三步：`profileContext.resolveNotifyChannel(channel)` 从当前 Profile 的 `notify_channels` 字段里找到对应配置——`ProfileContext` 就是 17 节 `AgentService` 在入口处放好的那个 ThreadLocal，工具执行时从它知道"当前是哪个 Agent"——`channel` 参数不传时用第一个/默认渠道；`sandbox.enforce(...)` 这一步先接进去，具体这道白名单怎么校验、`Sandbox` 接口怎么设计，23、24 节会专门展开，`notify` 到时候不需要自己重新实现一套；`adapter.send(...)` 才是真正发出去的地方，核心阶段这里注入的就是 `WebhookNotifyAdapter`。
 
-![NotifyTools 接口设计：核心阶段 WebhookNotifyAdapter，扩展阶段新增专用渠道](../../website/public/images/class-19-2.svg)
+![NotifyTools 接口设计：核心阶段 WebhookNotifyAdapter，扩展阶段新增专用渠道](../../images/class-19-2.svg)
 
 **Profile 配置示例：**
 

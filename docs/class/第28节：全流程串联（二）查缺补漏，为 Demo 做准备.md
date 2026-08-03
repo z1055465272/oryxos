@@ -14,7 +14,7 @@
 
 钟推链路 = 人推链路换了个触发头（AgentScheduler 代替人）、多了个推送尾（notify 代替屏幕输出），中间完全复用：
 
-![钟推链路五站：定时触发、统一入口、ReAct、notify 推送、落库](../../website/public/images/class-28-1.svg)
+![钟推链路五站：定时触发、统一入口、ReAct、notify 推送、落库](../../images/class-28-1.svg)
 
 还是用上一节的对账法。配一个测试 Profile：`schedules` 设成每两分钟触发、消息是"查一下北京天气，把穿搭建议推送出去"，`notify_channels` 指向一个测试 webhook。等它自己跑一轮，然后对账——这次触发应该留下且只留下：
 
@@ -61,7 +61,7 @@
 
 31 节两个 Demo 要用的环境，这节末尾一次配齐、逐项打勾：
 
-![六项前置条件：白名单、通知渠道、新闻 MCP、记忆偏好、定时配置、跨重启](../../website/public/images/class-28-2.svg)
+![六项前置条件：白名单、通知渠道、新闻 MCP、记忆偏好、定时配置、跨重启](../../images/class-28-2.svg)
 
 验收合并成一句话能说清的三条：
 
