@@ -18,7 +18,7 @@ public record Profile(
     List<String> skills,
     List<String> mcpServers,
     List<ChannelRef> channels,
-    List<String> notifyChannels,
+    List<NotifyChannelConfig> notifyChannels,
     List<ScheduleConfig> schedules,
     List<String> bootstrap,
     Settings settings) {

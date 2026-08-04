@@ -142,7 +142,7 @@ public class ProfileLoader {
     List<Profile.ChannelRef> channels = parseChannels(raw);
 
     // notify_channels
-    List<String> notifyChannels = getStringList(raw, "notify_channels");
+    List<NotifyChannelConfig> notifyChannels = parseNotifyChannels(raw);
 
     // schedules
     List<Profile.ScheduleConfig> schedules = parseSchedules(raw);
@@ -186,6 +186,22 @@ public class ProfileLoader {
                   (Map<String, String>)
                       (Map<?, ?>) ch.getOrDefault("config", Collections.emptyMap());
               return new Profile.ChannelRef(chName, config);
+            })
+        .toList();
+  }
+
+  @SuppressWarnings("unchecked")
+  private List<NotifyChannelConfig> parseNotifyChannels(Map<String, Object> raw) {
+    List<Map<String, Object>> list = (List<Map<String, Object>>) raw.get("notify_channels");
+    if (list == null) {
+      return Collections.emptyList();
+    }
+    return list.stream()
+        .map(
+            ch -> {
+              String type = getString(ch, "type");
+              String url = getString(ch, "url");
+              return new NotifyChannelConfig(type, url);
             })
         .toList();
   }

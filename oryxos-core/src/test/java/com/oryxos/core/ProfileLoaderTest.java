@@ -47,7 +47,8 @@ class ProfileLoaderTest {
         channels:
           - name: cli
         notify_channels:
-          - webhook-ops
+          - type: webhook
+            url: https://hooks.example.com/ops
         schedules:
           - id: morning-report
             cron: "0 9 * * *"
@@ -78,7 +79,9 @@ class ProfileLoaderTest {
     assertThat(p.mcpServers()).containsExactly("github-mcp");
     assertThat(p.channels()).hasSize(1);
     assertThat(p.channels().get(0).name()).isEqualTo("cli");
-    assertThat(p.notifyChannels()).containsExactly("webhook-ops");
+    assertThat(p.notifyChannels()).hasSize(1);
+    assertThat(p.notifyChannels().get(0).type()).isEqualTo("webhook");
+    assertThat(p.notifyChannels().get(0).url()).isEqualTo("https://hooks.example.com/ops");
     assertThat(p.schedules()).hasSize(1);
     assertThat(p.schedules().get(0).id()).isEqualTo("morning-report");
     assertThat(p.schedules().get(0).cron()).isEqualTo("0 9 * * *");

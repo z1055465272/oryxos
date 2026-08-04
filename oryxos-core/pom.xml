@@ -15,6 +15,11 @@
     <description>核心引擎：ReActLoop、PromptBuilder、ToolExecutor、ContextLoader、Session、Profile、OryxTool 抽象。所有模块依赖它</description>
 
     <dependencies>
+        <!-- Spring Context：@Component 等核心注解（版本由 spring-boot-starter-parent 管理） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
         <!-- SnakeYAML：解析 Profile YAML（版本由 spring-boot-starter-parent 管理） -->
         <dependency>
             <groupId>org.yaml</groupId>

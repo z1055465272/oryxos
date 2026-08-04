@@ -1,0 +1,14 @@
+name: default
+description: 默认 Agent
+identity:
+  agent_name: 小欧
+  prompt: 你是一个乐于助人的助手。回答尽量简洁。
+provider:
+  name: deepseek
+  model: deepseek-chat
+  temperature: 0.7
+tools: []
+bootstrap: []
+settings:
+  max_iterations: 10
+  max_history_turns: 20
