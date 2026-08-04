@@ -1,0 +1,24 @@
+# OryxOS MCP server 配置（Plugin Tool 方式二）
+#
+# 声明外部 MCP server，OryxOS 启动时自动连接，把它的工具包装注册成内置工具同等的 OryxTool。
+# 配置说明：
+#   - name:        server 唯一名
+#   - transport:   stdio（子进程）或 sse（HTTP 长连接）
+#   - command:     stdio 传输时启动 server 的命令（必填）
+#   - args:        可选，启动参数列表
+#   - env:         可选，传给 server 的环境变量；敏感值用 ${ENV_VAR} 占位，不落明文
+#
+# 示例（未启用，按需取消注释）：
+# mcpServers:
+#   - name: github-mcp
+#     transport: stdio
+#     command: npx
+#     args:
+#       - -y
+#       - "@modelcontextprotocol/server-github"
+#     env:
+#       GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_PERSONAL_ACCESS_TOKEN}
+#
+# 留空列表 = 不连接任何外部 MCP server（合法状态，OryxOS 照常启动）。
+
+mcpServers: []

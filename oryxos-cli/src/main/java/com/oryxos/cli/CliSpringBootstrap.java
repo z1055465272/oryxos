@@ -2,7 +2,6 @@ package com.oryxos.cli;
 
 import com.oryxos.core.AgentService;
 import com.oryxos.core.ContextLoader;
-import com.oryxos.core.OryxTool;
 import com.oryxos.core.ProfileLoader;
 import com.oryxos.core.ProfileRegistry;
 import com.oryxos.core.PromptBuilder;
@@ -20,11 +19,11 @@ import com.oryxos.storage.JpaToolInvocationStore;
 import com.oryxos.storage.LlmCallRepository;
 import com.oryxos.storage.SessionRepository;
 import com.oryxos.storage.ToolInvocationRepository;
+import com.oryxos.tool.mcp.McpServerConfigLoader;
+import com.oryxos.tool.registry.DefaultToolRegistry;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -37,6 +36,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
@@ -49,13 +49,16 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * 会得到 "Found 0 JPA repository interfaces"、审计写不进去直接报错退出.
  *
  * <p>把 16/17 节的 POJO 引擎（ProviderService/ReActLoop/PromptBuilder/ToolExecutor/AgentService 等）以
- * {@code @Bean} 方法装配成上下文；Provider 走显式 {@code Map<String, ChatModel>} 映射（宪法 III），不靠类型扫描。 数据源与 JPA
- * 配置来自 classpath 根 {@code application.yaml}（运行 fat JAR 时由 boot 模块提供）.
+ * {@code @Bean} 方法装配成上下文；Provider 走显式 {@code Map<String, ChatModel>} 映射（宪法 III），不靠类型扫描。 工具模块
+ * （com.oryxos.tool）与核心模块（com.oryxos.core，含 ProfileContext 这个唯一的 @Component）的 {@code @Component} 经
+ * {@code @ComponentScan} 显式扫入。 数据源与 JPA 配置来自 classpath 根 {@code application.yaml}（运行 fat JAR 时由
+ * boot 模块提供）.
  */
 @Configuration
 @EnableAutoConfiguration
 @EnableJpaRepositories(basePackages = "com.oryxos.storage")
 @EntityScan(basePackages = "com.oryxos.storage")
+@ComponentScan(basePackages = {"com.oryxos.tool", "com.oryxos.core"})
 @EnableConfigurationProperties(OryxOsProperties.class)
 public class CliSpringBootstrap {
 
@@ -73,20 +76,18 @@ public class CliSpringBootstrap {
     return new JpaToolInvocationStore(toolInvocationRepository);
   }
 
-  /** 工具注册表：第 20 节在 oryxos-tool 落地；本节先给空实现让 ReAct 循环可装配（无内置工具）. */
+  /**
+   * 工具注册表：DefaultToolRegistry（第 20 节落地），内置工具经 BuiltinToolRegistration、MCP 工具经 McpClientService 注册.
+   */
   @Bean
-  ToolRegistry toolRegistry() {
-    return new ToolRegistry() {
-      @Override
-      public Optional<OryxTool> get(String name) {
-        return Optional.empty();
-      }
+  DefaultToolRegistry toolRegistry() {
+    return new DefaultToolRegistry();
+  }
 
-      @Override
-      public Collection<OryxTool> listAll() {
-        return java.util.Collections.emptyList();
-      }
-    };
+  /** MCP server 配置加载：读 .oryxos/mcp_servers.yaml，McpClientService 启动时连接并注册其工具. */
+  @Bean
+  McpServerConfigLoader mcpServerConfigLoader() {
+    return new McpServerConfigLoader(WORKSPACE_DIR.resolve("mcp_servers.yaml"));
   }
 
   @Bean
