@@ -13,7 +13,7 @@ import com.oryxos.core.NotifyChannelConfig;
 import com.oryxos.core.Profile;
 import com.oryxos.core.ProfileContext;
 import com.oryxos.core.ToolResult;
-import com.oryxos.tool.notify.NotifyChannelAdapter;
+import com.oryxos.tool.notify.NotifyChannelAdapterRouter;
 import com.oryxos.tool.sandbox.ActionType;
 import com.oryxos.tool.sandbox.Sandbox;
 import java.util.List;
@@ -31,7 +31,7 @@ class NotifyToolsTest {
 
   @Mock private Sandbox sandbox;
 
-  @Mock private NotifyChannelAdapter adapter;
+  @Mock private NotifyChannelAdapterRouter router;
 
   private ProfileContext profileContext;
   private NotifyTools notifyTools;
@@ -39,7 +39,7 @@ class NotifyToolsTest {
   @BeforeEach
   void setUp() {
     profileContext = new ProfileContext();
-    notifyTools = new NotifyTools(sandbox, adapter, profileContext);
+    notifyTools = new NotifyTools(sandbox, router, profileContext);
   }
 
   @AfterEach
@@ -54,7 +54,7 @@ class NotifyToolsTest {
     ProfileContext.set(profile);
 
     assertThrows(IllegalStateException.class, () -> notifyTools.notify("hello", null));
-    verifyNoInteractions(adapter);
+    verifyNoInteractions(router);
   }
 
   @Test
@@ -68,7 +68,7 @@ class NotifyToolsTest {
 
     notifyTools.notify("hello", null);
 
-    verify(adapter)
+    verify(router)
         .send(
             argThat(
                 target ->
@@ -86,9 +86,28 @@ class NotifyToolsTest {
 
     notifyTools.notify("hello", "webhook");
 
-    InOrder inOrder = inOrder(sandbox, adapter);
+    InOrder inOrder = inOrder(sandbox, router);
     inOrder.verify(sandbox).enforce(argThat(a -> a.type() == ActionType.HTTP_REQUEST));
-    inOrder.verify(adapter).send(any(), eq("hello"));
+    inOrder.verify(router).send(any(), eq("hello"));
+  }
+
+  @Test
+  @DisplayName("渠道配置了 secret 时透传给适配器（如钉钉加签）")
+  void secretPassedThroughToTargetConfig() {
+    Profile profile =
+        profileWithChannels(
+            new NotifyChannelConfig("dingtalk", "https://oapi.dingtalk.com/robot/send", "SEC123"));
+    ProfileContext.set(profile);
+
+    notifyTools.notify("hello", null);
+
+    verify(router)
+        .send(
+            argThat(
+                target ->
+                    target.config().get("url").equals("https://oapi.dingtalk.com/robot/send")
+                        && target.config().get("secret").equals("SEC123")),
+            eq("hello"));
   }
 
   @Test

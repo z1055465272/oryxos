@@ -201,7 +201,8 @@ public class ProfileLoader {
             ch -> {
               String type = getString(ch, "type");
               String url = getString(ch, "url");
-              return new NotifyChannelConfig(type, url);
+              String secret = getString(ch, "secret");
+              return new NotifyChannelConfig(type, url, secret);
             })
         .toList();
   }

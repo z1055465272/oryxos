@@ -12,6 +12,16 @@ class NotifyChannelConfigTest {
     NotifyChannelConfig config = new NotifyChannelConfig("webhook", "https://example.com/hook");
     assertEquals("webhook", config.type());
     assertEquals("https://example.com/hook", config.url());
+    assertEquals(null, config.secret());
+  }
+
+  @Test
+  void createsWithSecret() {
+    NotifyChannelConfig config =
+        new NotifyChannelConfig("dingtalk", "https://oapi.dingtalk.com/hook", "SEC123");
+    assertEquals("dingtalk", config.type());
+    assertEquals("https://oapi.dingtalk.com/hook", config.url());
+    assertEquals("SEC123", config.secret());
   }
 
   @Test

@@ -47,8 +47,9 @@ class ProfileLoaderTest {
         channels:
           - name: cli
         notify_channels:
-          - type: webhook
-            url: https://hooks.example.com/ops
+          - type: dingtalk
+            url: https://oapi.dingtalk.com/robot/send
+            secret: SEC123456
         schedules:
           - id: morning-report
             cron: "0 9 * * *"
@@ -80,8 +81,9 @@ class ProfileLoaderTest {
     assertThat(p.channels()).hasSize(1);
     assertThat(p.channels().get(0).name()).isEqualTo("cli");
     assertThat(p.notifyChannels()).hasSize(1);
-    assertThat(p.notifyChannels().get(0).type()).isEqualTo("webhook");
-    assertThat(p.notifyChannels().get(0).url()).isEqualTo("https://hooks.example.com/ops");
+    assertThat(p.notifyChannels().get(0).type()).isEqualTo("dingtalk");
+    assertThat(p.notifyChannels().get(0).url()).isEqualTo("https://oapi.dingtalk.com/robot/send");
+    assertThat(p.notifyChannels().get(0).secret()).isEqualTo("SEC123456");
     assertThat(p.schedules()).hasSize(1);
     assertThat(p.schedules().get(0).id()).isEqualTo("morning-report");
     assertThat(p.schedules().get(0).cron()).isEqualTo("0 9 * * *");
