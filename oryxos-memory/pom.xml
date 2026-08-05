@@ -19,5 +19,17 @@
             <groupId>com.oryxos</groupId>
             <artifactId>oryxos-core</artifactId>
         </dependency>
+        <!-- Spring AI：@Tool 注解的 JSON Schema 生成（Constitution 原则二，禁用自动 tool 执行） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-model</artifactId>
+        </dependency>
+
+        <!-- 测试 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -2,6 +2,8 @@ package com.oryxos.cli;
 
 import com.oryxos.core.AgentService;
 import com.oryxos.core.ContextLoader;
+import com.oryxos.core.MemoryService;
+import com.oryxos.core.OryxTool;
 import com.oryxos.core.ProfileLoader;
 import com.oryxos.core.ProfileRegistry;
 import com.oryxos.core.PromptBuilder;
@@ -10,6 +12,10 @@ import com.oryxos.core.SessionManager;
 import com.oryxos.core.ToolExecutor;
 import com.oryxos.core.ToolInvocationStore;
 import com.oryxos.core.ToolRegistry;
+import com.oryxos.core.ToolResult;
+import com.oryxos.memory.DefaultMemoryService;
+import com.oryxos.memory.LongTermMemory;
+import com.oryxos.memory.MemoryTools;
 import com.oryxos.provider.DefaultProviderService;
 import com.oryxos.provider.OryxOsProperties;
 import com.oryxos.provider.ProviderNotFoundException;
@@ -32,6 +38,9 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
+import org.springframework.ai.support.ToolCallbacks;
+import org.springframework.ai.tool.ToolCallback;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -58,7 +67,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableAutoConfiguration
 @EnableJpaRepositories(basePackages = "com.oryxos.storage")
 @EntityScan(basePackages = "com.oryxos.storage")
-@ComponentScan(basePackages = {"com.oryxos.tool", "com.oryxos.core"})
+@ComponentScan(basePackages = {"com.oryxos.tool", "com.oryxos.core", "com.oryxos.memory"})
 @EnableConfigurationProperties(OryxOsProperties.class)
 public class CliSpringBootstrap {
 
@@ -82,6 +91,50 @@ public class CliSpringBootstrap {
   @Bean
   DefaultToolRegistry toolRegistry() {
     return new DefaultToolRegistry();
+  }
+
+  /**
+   * MemoryTools（memory 模块）经组合根注册进注册表：@Tool schema 由 ToolCallbacks 生成，包装成 OryxTool（与
+   * BuiltinToolRegistration 同构）.
+   */
+  @Bean
+  InitializingBean memoryToolRegistration(DefaultToolRegistry registry, MemoryTools memoryTools) {
+    return () -> {
+      for (ToolCallback callback : ToolCallbacks.from(memoryTools)) {
+        registry.register(new MemoryToolCallbackOryxTool(callback));
+        log.info("Registered memory tool: {}", callback.getToolDefinition().name());
+      }
+    };
+  }
+
+  /** 把 Spring AI 的 ToolCallback（内含 @Tool schema）适配成 OryxTool（局部实现，避免 tool/memory 跨模块依赖）. */
+  private static final class MemoryToolCallbackOryxTool implements OryxTool {
+    private final ToolCallback delegate;
+
+    MemoryToolCallbackOryxTool(ToolCallback delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public String getName() {
+      return delegate.getToolDefinition().name();
+    }
+
+    @Override
+    public String getDescription() {
+      return delegate.getToolDefinition().description();
+    }
+
+    @Override
+    public String getInputSchema() {
+      return delegate.getToolDefinition().inputSchema();
+    }
+
+    @Override
+    public ToolResult execute(String jsonInput) {
+      String raw = delegate.call(jsonInput);
+      return ToolResult.ok(raw);
+    }
   }
 
   /** MCP server 配置加载：读 .oryxos/mcp_servers.yaml，McpClientService 启动时连接并注册其工具. */
@@ -116,8 +169,19 @@ public class CliSpringBootstrap {
   }
 
   @Bean
-  PromptBuilder promptBuilder(ContextLoader contextLoader, ToolRegistry toolRegistry) {
-    return new PromptBuilder(contextLoader, toolRegistry);
+  LongTermMemory longTermMemory() {
+    return new LongTermMemory(WORKSPACE_DIR.resolve("memory").resolve("MEMORY.md"));
+  }
+
+  @Bean
+  DefaultMemoryService defaultMemoryService(LongTermMemory longTermMemory) {
+    return new DefaultMemoryService(longTermMemory);
+  }
+
+  @Bean
+  PromptBuilder promptBuilder(
+      ContextLoader contextLoader, ToolRegistry toolRegistry, MemoryService memoryService) {
+    return new PromptBuilder(contextLoader, toolRegistry, memoryService);
   }
 
   @Bean

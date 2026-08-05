@@ -16,13 +16,16 @@ class PromptBuilderTest {
 
   private ContextLoader contextLoader;
   private ToolRegistry toolRegistry;
+  private MemoryService memoryService;
   private PromptBuilder promptBuilder;
 
   @BeforeEach
   void setUp() {
     contextLoader = mock(ContextLoader.class);
     toolRegistry = mock(ToolRegistry.class);
-    promptBuilder = new PromptBuilder(contextLoader, toolRegistry);
+    memoryService = mock(MemoryService.class);
+    when(memoryService.buildContext(any(), any())).thenReturn("");
+    promptBuilder = new PromptBuilder(contextLoader, toolRegistry, memoryService);
   }
 
   @Test
@@ -82,6 +85,19 @@ class PromptBuilderTest {
     String systemMessage = prompt.systemMessage().trim();
     String lastLine = systemMessage.split("\\R")[systemMessage.split("\\R").length - 1];
     assertThat(lastLine).startsWith("当前时间：").contains(LocalDate.now().toString());
+  }
+
+  @Test
+  @DisplayName("长期记忆拼进 system prompt")
+  void appendsMemoryToSystemMessage() {
+    when(contextLoader.loadSystemPrompt(any())).thenReturn("【Bootstrap 内容】");
+    when(memoryService.buildContext(any(), any())).thenReturn("长期记忆：\n- [2026-08-05] 用户偏好 Java");
+    Session session = new Session("s-1", "test", "cli", "u-1");
+    session.appendUserMessage("你好");
+
+    Prompt prompt = promptBuilder.build(session, profile("role", List.of(), List.of(), 20));
+
+    assertThat(prompt.systemMessage()).contains("用户偏好 Java");
   }
 
   @Test

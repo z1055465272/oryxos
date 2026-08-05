@@ -8,9 +8,8 @@ import java.util.List;
 /**
  * 每轮 LLM 调用的 Prompt 组装器.
  *
- * <p>四部分按顺序：①system prompt（角色设定 + ContextLoader 的 Bootstrap + Skill 正文 + 当前日期时间） ②长期记忆（第 22 节
- * Memory 模块接入前留空）③会话历史（最近 maxHistoryTurns 条，默认 20，超出截断） ④当前可用工具列表（经 ToolRegistry 从 Profile.tools
- * 名称解析）。
+ * <p>四部分按顺序：①system prompt（角色设定 + ContextLoader 的 Bootstrap + Skill 正文 + 长期记忆 + 当前日期时间） ②会话历史（最近
+ * maxHistoryTurns 条，默认 20，超出截断） ③当前可用工具列表（经 ToolRegistry 从 Profile.tools 名称解析）。
  */
 public class PromptBuilder {
 
@@ -22,10 +21,14 @@ public class PromptBuilder {
 
   private final ContextLoader contextLoader;
   private final ToolRegistry toolRegistry;
+  private final MemoryService memoryService;
 
-  public PromptBuilder(ContextLoader contextLoader, ToolRegistry toolRegistry) {
+  /** 构建 Prompt 组装器（长期记忆经 MemoryService 注入 system prompt，第 22 节集成点）. */
+  public PromptBuilder(
+      ContextLoader contextLoader, ToolRegistry toolRegistry, MemoryService memoryService) {
     this.contextLoader = contextLoader;
     this.toolRegistry = toolRegistry;
+    this.memoryService = memoryService;
   }
 
   /** 组装本轮 Prompt. */
@@ -38,11 +41,11 @@ public class PromptBuilder {
     return new Prompt(
         findCurrentUserMessage(history),
         history,
-        buildSystemMessage(profile),
+        buildSystemMessage(session, profile),
         resolveTools(profile));
   }
 
-  private String buildSystemMessage(Profile profile) {
+  private String buildSystemMessage(Session session, Profile profile) {
     StringBuilder sb = new StringBuilder();
     if (profile.identity() != null
         && profile.identity().prompt() != null
@@ -50,18 +53,13 @@ public class PromptBuilder {
       sb.append(profile.identity().prompt()).append("\n\n");
     }
     sb.append(contextLoader.loadSystemPrompt(profile));
-    String memory = buildMemorySection(profile);
+    String memory = memoryService.buildContext(session, profile);
     if (!memory.isBlank()) {
       sb.append("\n\n").append(memory);
     }
     // 末尾附当前日期时间——模型自己不知道今天几号，定时场景的"今天"全靠这一行。
     sb.append("\n\n当前时间：").append(LocalDateTime.now().format(DATE_TIME_FORMAT));
     return sb.toString();
-  }
-
-  /** 第二部分：长期记忆占位。第 22 节 Memory 模块接入；未就位时留空（spec FR-002）. */
-  private String buildMemorySection(Profile profile) {
-    return "";
   }
 
   /** 只留最近 N 条消息（核心阶段"简单办法"，课件默认 20）；N<=0 时历史为空，由 userMessage 字段兜底. */

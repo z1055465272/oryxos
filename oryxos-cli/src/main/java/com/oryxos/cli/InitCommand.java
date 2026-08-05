@@ -34,7 +34,8 @@ public class InitCommand implements Runnable {
     for (String sub : new String[] {"agents", "skills", "memory", "sessions", "logs"}) {
       Files.createDirectories(WORKSPACE_DIR.resolve(sub));
     }
-    writeIfAbsent("memory/MEMORY.md", "# 长期记忆\n\n（Agent 通过 save_memory 写入，不得手动修改）\n");
+    writeIfAbsent(
+        "memory/MEMORY.md", "# 长期记忆\n\n（Agent 通过 save_memory 写入，不得手动修改）\n\n## 核心记忆\n\n## 归档记忆\n");
     // 默认 Profile：供 ProfileLoader（第 16 节）加载；Agent 目录机制（.oryxos/agents/）第 29 节迁移
     writeIfAbsent("profiles/default.yaml", defaultProfileYaml());
   }
