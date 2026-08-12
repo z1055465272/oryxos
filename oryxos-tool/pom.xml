@@ -34,6 +34,11 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-model</artifactId>
         </dependency>
+        <!-- Spring Boot：@ConfigurationProperties 配置绑定（WhitelistSandbox 三个白名单配置，版本由 spring-boot-starter-parent 管理） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
 
         <!-- 测试 -->
         <dependency>

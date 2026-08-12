@@ -27,6 +27,9 @@ import com.oryxos.storage.SessionRepository;
 import com.oryxos.storage.ToolInvocationRepository;
 import com.oryxos.tool.mcp.McpServerConfigLoader;
 import com.oryxos.tool.registry.DefaultToolRegistry;
+import com.oryxos.tool.sandbox.FileSandboxProperties;
+import com.oryxos.tool.sandbox.HttpSandboxProperties;
+import com.oryxos.tool.sandbox.ShellSandboxProperties;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -68,7 +71,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories(basePackages = "com.oryxos.storage")
 @EntityScan(basePackages = "com.oryxos.storage")
 @ComponentScan(basePackages = {"com.oryxos.tool", "com.oryxos.core", "com.oryxos.memory"})
-@EnableConfigurationProperties(OryxOsProperties.class)
+@EnableConfigurationProperties({
+  OryxOsProperties.class,
+  FileSandboxProperties.class,
+  ShellSandboxProperties.class,
+  HttpSandboxProperties.class
+})
 public class CliSpringBootstrap {
 
   private static final Logger log = LoggerFactory.getLogger(CliSpringBootstrap.class);

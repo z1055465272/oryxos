@@ -27,8 +27,41 @@ spring:
 oryxos:
   providers:
     - name: deepseek
-      base-url: https://api.deepseek.com/v1
-      api-key: ${DEEPSEEK_API_KEY}
+      base-url: https://api.deepseek.com
+      api-key: sk-9126f84d318341f8a54c84d14020ee47
+
+# Sandbox 白名单（宪法 VI，第 24 节）：WhitelistSandbox 按此三块配置校验工具动作。
+# 边界语义：配置项为空 = "什么都不允许"，不是"不校验"。
+# 默认取宽松值（覆盖现有 chat/demo/notify 依赖），沙箱生效但不打断现有流程；按需收紧。
+file:
+  allowed_paths:
+    - .oryxos
+shell:
+  allowed_commands:
+    - ls
+    - cat
+    - echo
+    - pwd
+    - git
+    - java
+    - curl
+    - mkdir
+    - cp
+    - mv
+    - head
+    - tail
+    - grep
+    - find
+    - python
+    - node
+    - npm
+http:
+  allowed_domains:
+    - deepseek.com
+    - api.deepseek.com
+    - *.deepseek.com
+    - example.com
+    - *.example.com
 
 server:
   port: 8080
