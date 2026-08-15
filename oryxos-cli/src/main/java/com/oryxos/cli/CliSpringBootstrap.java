@@ -13,6 +13,7 @@ import com.oryxos.core.ToolExecutor;
 import com.oryxos.core.ToolInvocationStore;
 import com.oryxos.core.ToolRegistry;
 import com.oryxos.core.ToolResult;
+import com.oryxos.core.ToolSandboxGuard;
 import com.oryxos.memory.DefaultMemoryService;
 import com.oryxos.memory.LongTermMemory;
 import com.oryxos.memory.MemoryTools;
@@ -51,6 +52,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 /**
  * 重命令（chat/serve/gateway）共用的 Spring 上下文启动器.
@@ -156,6 +158,18 @@ public class CliSpringBootstrap {
     return new ProfileRegistry();
   }
 
+  /**
+   * 定时任务调度线程池：AgentScheduler（25 节）依赖的具体类型；Spring Boot 自动配置同名 bean 会因 @ConditionalOnMissingBean
+   * 退避，无冲突.
+   */
+  @Bean
+  ThreadPoolTaskScheduler taskScheduler() {
+    ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+    scheduler.setPoolSize(4);
+    scheduler.setThreadNamePrefix("oryx-scheduler-");
+    return scheduler;
+  }
+
   /** 启动时按配置的 provider 名校验集，扫 .oryxos/profiles/ 加载 Profile 注册进注册表（无目录则 WARN 跳过）. */
   @Bean
   ProfileLoader profileLoader(OryxOsProperties oryxOsProperties, ProfileRegistry profileRegistry) {
@@ -193,8 +207,11 @@ public class CliSpringBootstrap {
   }
 
   @Bean
-  ToolExecutor toolExecutor(ToolRegistry toolRegistry, ToolInvocationStore toolInvocationStore) {
-    return new ToolExecutor(toolRegistry, toolInvocationStore);
+  ToolExecutor toolExecutor(
+      ToolRegistry toolRegistry,
+      ToolInvocationStore toolInvocationStore,
+      ToolSandboxGuard sandboxGuard) {
+    return new ToolExecutor(toolRegistry, toolInvocationStore, sandboxGuard);
   }
 
   @Bean

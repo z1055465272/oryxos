@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -90,6 +91,43 @@ class ToolExecutorTest {
     ToolInvocationRecord record = capturedRecord();
     assertThat(record.success()).isFalse();
     assertThat(record.errorMessage()).contains("unknown tool");
+  }
+
+  @Test
+  @DisplayName("全局沙箱拒绝_返回失败结果且不执行工具")
+  void sandboxGuardRejects_returnsFailureWithoutExecuting() {
+    ToolSandboxGuard guard = mock(ToolSandboxGuard.class);
+    when(guard.check(any())).thenReturn("命令不在白名单内: rm");
+    executor = new ToolExecutor(toolRegistry, store, guard);
+    OryxTool tool = mock(OryxTool.class);
+    when(toolRegistry.get("shell")).thenReturn(Optional.of(tool));
+
+    ToolResult result =
+        executor.execute("s-1", new ToolCall("call-1", "shell", "{\"command\":\"rm -rf /\"}"));
+
+    assertThat(result.success()).isFalse();
+    assertThat(result.error()).contains("命令不在白名单内: rm");
+    verify(tool, never()).execute(any());
+    ToolInvocationRecord record = capturedRecord();
+    assertThat(record.success()).isFalse();
+    assertThat(record.errorMessage()).contains("命令不在白名单内: rm");
+  }
+
+  @Test
+  @DisplayName("全局沙箱放行_正常执行工具")
+  void sandboxGuardAllows_elseExecutesTool() {
+    ToolSandboxGuard guard = mock(ToolSandboxGuard.class);
+    when(guard.check(any())).thenReturn(null);
+    executor = new ToolExecutor(toolRegistry, store, guard);
+    OryxTool tool = mock(OryxTool.class);
+    when(tool.execute(any())).thenReturn(ToolResult.ok("ok"));
+    when(toolRegistry.get("shell")).thenReturn(Optional.of(tool));
+
+    ToolResult result =
+        executor.execute("s-1", new ToolCall("call-1", "shell", "{\"command\":\"ls\"}"));
+
+    assertThat(result.success()).isTrue();
+    verify(tool).execute(any());
   }
 
   private ToolInvocationRecord capturedRecord() {

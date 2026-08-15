@@ -15,10 +15,20 @@ public class ToolExecutor {
 
   private final ToolRegistry toolRegistry;
   private final ToolInvocationStore toolInvocationStore;
+  private final ToolSandboxGuard sandboxGuard;
 
   public ToolExecutor(ToolRegistry toolRegistry, ToolInvocationStore toolInvocationStore) {
+    this(toolRegistry, toolInvocationStore, null);
+  }
+
+  /** 全局沙箱守卫可为空：未接守卫时跳过全局校验，仍由内置 Tool 自身首行校验兜底（测试兼容）. */
+  public ToolExecutor(
+      ToolRegistry toolRegistry,
+      ToolInvocationStore toolInvocationStore,
+      ToolSandboxGuard sandboxGuard) {
     this.toolRegistry = toolRegistry;
     this.toolInvocationStore = toolInvocationStore;
+    this.sandboxGuard = sandboxGuard;
   }
 
   /**
@@ -29,8 +39,12 @@ public class ToolExecutor {
    * @return 工具执行结果；未知工具/业务失败返回失败结果，工具抛异常则审计后上抛
    */
   public ToolResult execute(String sessionId, ToolCall toolCall) {
-    // Sandbox 调用位：第 24 节接线（WhitelistSandbox.enforce）——涉外 IO 首行过沙箱检查，见 TechnicalSolution §6.7。
-    enforceSandbox(toolCall);
+    // 全局沙箱校验（宪法 VI）：涉外 IO 首行过沙箱检查，见 TechnicalSolution §6.7。拒绝按普通工具失败记审计并返回失败结果。
+    String violation = enforceSandbox(toolCall);
+    if (violation != null) {
+      record(sessionId, toolCall, null, false, violation, 0);
+      return ToolResult.fail(violation, false);
+    }
 
     var tool = toolRegistry.get(toolCall.name());
     if (tool.isEmpty()) {
@@ -56,10 +70,12 @@ public class ToolExecutor {
     }
   }
 
-  /** Sandbox 调用位（第 24 节接线）。沙箱未就位前为 no-op，保留调用形态以便后续接线. */
-  private void enforceSandbox(ToolCall toolCall) {
-    // TODO(24节): sandbox.enforce(new SandboxAction(SandboxAction.ActionType.X, target)) —— 见
-    // TechnicalSolution §6.7。
+  /** 全局沙箱校验：未接守卫返回 null（放行），守卫拒绝返回可读失败原因. */
+  private String enforceSandbox(ToolCall toolCall) {
+    if (sandboxGuard == null) {
+      return null;
+    }
+    return sandboxGuard.check(toolCall);
   }
 
   /** 写工具审计记录；落库异常只记日志不阻断工具执行（与 llm_calls 审计同口径）. */
